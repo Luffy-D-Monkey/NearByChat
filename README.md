@@ -3,3 +3,6 @@
 于是就想修改一下，基于位置的聊天应用。
 位置保存的信息是GeoHash，引用了https://github.com/drfonfon/android-geohash
 
+与服务器通信方式采用socket长连接（心跳），参考大佬demo，地址 https://github.com/HouBin506/SocketPushClient
+
+
