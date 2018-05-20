@@ -1,33 +1,9 @@
-# Nearby Chat
+    最近想做一个聊天的app软件，凑巧在社区上看到这个demo，地址https://github.com/EzraLopez/nearbychat
+	于是想模仿一下，发现在国内用不了，可能用法不对还是什么的
+于是就想修改一下，基于位置的聊天应用。
+位置保存的信息是GeoHash，引用了https://github.com/drfonfon/android-geohash
 
-[![Build Status](https://travis-ci.com/EzraLopez/nearbychat.svg?branch=master)](https://travis-ci.com/EzraLopez/nearbychat)
+与服务器通信方式采用socket长连接（心跳），参考大佬Socket demo，地址 https://github.com/HouBin506/SocketPushClient
 
-Experimental Android app demonstrating the use of [Nearby Messages API](https://developers.google.com/nearby/messages/overview) for communicating between devices within close proximity of each other (within about 100 feet). The devices don't have to be on the same network, but they do have to be connected to the Internet.
-
-<a href='https://lh3.googleusercontent.com/STKvfQlGMDOAj56sNvArmlEv1FjTGMwaeMjuC80NCUm1IBTRNQyqmpCAK_dtCrQgJEMwwqxqL3Tj_S2cfXfx4xGTba5vrL1tIfRstPOGocdwK95s1YGB2KUwp4yOwZmRIFSVKlCJRkmYCSpDU6TWWVnbAUfuKXgofaK4Z9oht1rbnPj44MHtDCgjXH2ao5PGQuN2r-GaAvPEHAd53g47T20s0xSafalllOSnSJb2sJ68sFXH-RvF-RxRJGRvWJnkZF1U2ftz6qyX0ZyxFK0Du6M67qf9XA1vSO4M3dDoae1a0MrRrQNKHLyPchuywyAqfE4CCoeUiFPPkaa8l1dTaLpQ5eIgG-VMgm4yVOrDhHp5M19vzxyZ3SbTnzg5sRR6rAc3tSaFwW7HbrODdKis6wi1j4cEGBTgPqGQ-3k98LlcFTpTVRebyMdocVmkegG-LzRfVnQI8dTkA56uRezUK_cjplmh2RYSeTulDsJzkFCFlQK-8JKMBN2hebb1Gj1pieyMu8Pv0Uie_Cn1vImkUTCo3YB4KQQ7vjfHhx8C3hUJdqNPy6D2fA7BA4pYM20-b98w35ZYCPVX2MXfzzlZq9NkfBElqxNCpBcPdGG5LScUMRLKqabNfoXB6rr5QNEPeUALajWoxc2ttp1d1XXt9a2tV5SYF8cyhA=w1139-h703-no'><img width='100%' height='100%' alt='Screenshot 1' src='https://lh3.googleusercontent.com/STKvfQlGMDOAj56sNvArmlEv1FjTGMwaeMjuC80NCUm1IBTRNQyqmpCAK_dtCrQgJEMwwqxqL3Tj_S2cfXfx4xGTba5vrL1tIfRstPOGocdwK95s1YGB2KUwp4yOwZmRIFSVKlCJRkmYCSpDU6TWWVnbAUfuKXgofaK4Z9oht1rbnPj44MHtDCgjXH2ao5PGQuN2r-GaAvPEHAd53g47T20s0xSafalllOSnSJb2sJ68sFXH-RvF-RxRJGRvWJnkZF1U2ftz6qyX0ZyxFK0Du6M67qf9XA1vSO4M3dDoae1a0MrRrQNKHLyPchuywyAqfE4CCoeUiFPPkaa8l1dTaLpQ5eIgG-VMgm4yVOrDhHp5M19vzxyZ3SbTnzg5sRR6rAc3tSaFwW7HbrODdKis6wi1j4cEGBTgPqGQ-3k98LlcFTpTVRebyMdocVmkegG-LzRfVnQI8dTkA56uRezUK_cjplmh2RYSeTulDsJzkFCFlQK-8JKMBN2hebb1Gj1pieyMu8Pv0Uie_Cn1vImkUTCo3YB4KQQ7vjfHhx8C3hUJdqNPy6D2fA7BA4pYM20-b98w35ZYCPVX2MXfzzlZq9NkfBElqxNCpBcPdGG5LScUMRLKqabNfoXB6rr5QNEPeUALajWoxc2ttp1d1XXt9a2tV5SYF8cyhA=w1139-h703-no'/></a>
-
-<p align="center"><a href='https://play.google.com/store/apps/details?id=com.esdraslopez.android.nearbychat&pcampaignid=github'><img width='250px' alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png'/></a></p>
-
-* No need to sign up for anything
-* Usernames are optional
-* Only text-based chat is currently supported - URLs, emails, phone numbers, and addresses are clickable and will be opened with any installed app that supports them
-
-Nearby uses a combination of Bluetooth, Bluetooth Low Energy, Wi-Fi and near-ultrasonic audio to communicate between devices.
-
-Push notifications are not currently supported due to API limitations. You must have the app in the foreground to guarantee you will receive messages from devices around you. 
-
-The app is not meant to be used for extended periods of time. Nearby's use of radios and sensors will consume battery at a higher rate than usual. (Battery consumption will decrease with earshot mode - not yet implemented, but you could help. Remember, it is a fully open source app 😀)
-
-## Run Locally
-* Get an API Key. You may reuse an existing Android Key, but to create a new one follow the steps below: 
-  1. Go to the [Google Developers Console](https://console.developers.google.com/flows/enableapi?apiid=copresence&keyType=CLIENT_SIDE_ANDROID&reusekey=true).
-  2. Create or select a project.
-  3. Name the API Key. E.g. ```nearbychat-debug```
-  4. Optionally apply Application and API restrictions. I highly encourage you to do it. Use ```com.esdraslopez.android.nearbychat``` as the Application restriction and ```Nearby Messages API``` as the API restriction.
-  5. Click on create.
-* Place the key in your ```gradle.properties (Global Properties)``` file like this:
-  ``` 
-  NearbyChat_NearbyMessagesAPIKeyDebug="YOUR_API_KEY" 
-  ```
- ## Project Status
-Beta. Issues with [label "planned"](https://github.com/EzraLopez/nearbychat/labels/planned) are currently in development or will be soon.
+    运行Socket demo发现，client在发送消息的时候会出现android.os.NetworkOnMainThreadException，究其原因是作者处理发送消息的时候，在主线程中执行了Socket IO 操作，这个Exception在android6.0的时候，google没有进行处理，也就是说Socket demo在android6.0的手机上可以运行，7.0则不行。在android7.0的时候得到改正。所以这里的处理方法就是把发送消息那里的IO操作放到了一个简单的子线程中处理。
+次日，正式放弃上述Socket demo（2018-05-19）
