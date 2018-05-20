@@ -31,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
 
     private String username;
     private String userUUID;
+    private String geohashstring;
     private long loginTime;
 
     private MessageListener messageListener;
@@ -46,9 +47,11 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.empty_view) Group chatHistoryEmptyView;
 
     @OnClick(R.id.send_message_button)
-    public void sendMessage() {
+    public void sendMessage()
+    {
         String message = messageInput.getText().toString().trim();
-        if (!message.isEmpty()) {
+        if (!message.isEmpty())
+        {
             long timestamp = System.currentTimeMillis();
 
             DeviceMessage deviceMessage = new DeviceMessage(userUUID, username, message, timestamp);
@@ -70,11 +73,13 @@ public class MainActivity extends AppCompatActivity {
 
         username = getIntent().getStringExtra(LoginActivity.KEY_USERNAME);
         userUUID = getIntent().getStringExtra(LoginActivity.KEY_USER_UUID);
+        geohashstring = getIntent().getStringExtra(LoginActivity.KEY_GEOHASH);
 
         loginTime = System.currentTimeMillis();
 
         messageListAdapter = new MessageListAdapter(this, userUUID);
-        messageListAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+        messageListAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver()
+        {
             @Override
             public void onItemRangeRemoved(int positionStart, int itemCount) {
                 updateEmptyView();
@@ -108,9 +113,11 @@ public class MainActivity extends AppCompatActivity {
         messageListRecycler.setLayoutManager(layoutManager);
         messageListRecycler.setAdapter(messageListAdapter);
 
-        messageListener = new MessageListener() {
+        messageListener = new MessageListener()
+        {
             @Override
-            public void onFound(Message message) {
+            public void onFound(Message message)
+            {
                 Log.d(TAG, "Found message: " + new String(message.getContent()));
                 DeviceMessage deviceMessage = DeviceMessage.Companion.fromNearbyMessage(message);
                 if (deviceMessage.getCreationTime() < loginTime) {
@@ -125,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "Lost sight of message: " + new String(message.getContent()));
             }
         };
+
 
         logoutDialog = new AlertDialog.Builder(this);
         logoutDialog

@@ -25,6 +25,9 @@ android {
     }
 }
 
+
+
+
 android.applicationVariants.all { variant ->
     def appName
 
@@ -53,7 +56,7 @@ android.applicationVariants.all { variant ->
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "com.android.support:appcompat-v7:$support_lib_version"
     implementation "com.android.support:support-media-compat:$support_lib_version"
     implementation "com.android.support:support-v4:$support_lib_version"
@@ -64,11 +67,12 @@ dependencies {
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
     implementation 'com.google.android.gms:play-services-nearby:15.0.0'
     implementation 'com.google.code.gson:gson:2.8.2'
-    implementation "com.mikepenz:aboutlibraries:6.0.8"
+    implementation 'com.mikepenz:aboutlibraries:6.0.8'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'androidx.core:core-ktx:0.3'
     implementation 'com.jakewharton:butterknife:8.8.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
+    implementation project(':livesocket')
 }
 repositories {
     mavenCentral()

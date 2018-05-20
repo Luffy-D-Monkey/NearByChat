@@ -22,6 +22,7 @@ import com.esdraslopez.android.nearbychat.Location.GeoHash
 import com.esdraslopez.android.nearbychat.MainActivity
 import com.esdraslopez.android.nearbychat.R
 import com.esdraslopez.android.nearbychat.Util
+import com.example.livesocket.TestLiveSocket
 import kotlinx.android.synthetic.main.activity_login.*
 import java.util.*
 
@@ -33,20 +34,21 @@ class LoginActivity : AppCompatActivity()
     private val Location = 2
     var geoHash:GeoHash? = null
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
         Util.clearSharedPreferences(this)
 
-        username_input.setOnEditorActionListener { v, actionId, event ->
+       /* username_input.setOnEditorActionListener { v, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 login()
                 true
             } else {
                 false
             }
-        }
+        }*/
 
         login_button.setOnClickListener { login() }
         about_button.setOnClickListener { Util.startActivity(this, AboutActivity::class.java) }
@@ -56,7 +58,7 @@ class LoginActivity : AppCompatActivity()
         getAddress()
 
     }
-
+/*
     //shouldShowRequestPermissionRationale主要用于给用户一个申请权限的解释，该方法只有在用户在上一次已经拒绝过你的这个权限申请。也就是说，用户已经拒绝一次了，你又弹个授权框，你需要给用户一个解释，为什么要授权，则使用该方法。
     private fun requestPermission(permission: String, requestCode: Int) {
 
@@ -99,7 +101,7 @@ class LoginActivity : AppCompatActivity()
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
-
+*/
 
     fun login()
     {
@@ -158,7 +160,8 @@ class LoginActivity : AppCompatActivity()
         const val KEY_GEOHASH = "locationToHash"
     }
 
-    internal var locationListener: LocationListener = object : LocationListener {
+    internal var locationListener: LocationListener = object : LocationListener
+    {
         override fun onLocationChanged(location: Location) {
             //更新当前位置
             showLocations(location)

@@ -144,7 +144,8 @@ public class MessageListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         return messageList.get(position);
     }
 
-    public int add(DeviceMessage item) {
+    public int add(DeviceMessage item)
+    {
         return messageList.add(item);
     }
 
