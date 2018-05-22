@@ -58,6 +58,8 @@ public class MainActivity extends AppCompatActivity {
 
             activeMessage = deviceMessage.getMessage();
             Log.d(TAG, "Publishing message = " + new String(activeMessage.getContent()));
+
+            //这里是给附近的用户推送消息
             Nearby.getMessagesClient(this).publish(activeMessage);
 
             messageListAdapter.add(deviceMessage);
@@ -90,31 +92,38 @@ public class MainActivity extends AppCompatActivity {
                 updateEmptyView();
             }
 
+            //平滑移动
             @Override
             public void onItemRangeInserted(int positionStart, int itemCount) {
                 updateEmptyView();
 
                 messageListRecycler.post(new Runnable() {
                     @Override
-                    public void run() {
+                    public void run()
+                    {
                         messageListRecycler.smoothScrollToPosition(messageListAdapter.getItemCount() - 1);
                     }
                 });
             }
 
-            private void updateEmptyView() {
+            //空消息展示页面
+            private void updateEmptyView()
+            {
                 boolean showEmptyView = messageListAdapter.getItemCount() == 0;
                 chatHistoryEmptyView.setVisibility(showEmptyView ? View.VISIBLE : View.GONE);
             }
         });
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        //设置从底部对item更新，即消息从底部插入
         layoutManager.setStackFromEnd(true);
         messageListRecycler.setLayoutManager(layoutManager);
         messageListRecycler.setAdapter(messageListAdapter);
 
         messageListener = new MessageListener()
         {
+
+
             @Override
             public void onFound(Message message)
             {
@@ -122,9 +131,13 @@ public class MainActivity extends AppCompatActivity {
                 DeviceMessage deviceMessage = DeviceMessage.Companion.fromNearbyMessage(message);
                 if (deviceMessage.getCreationTime() < loginTime) {
                     Log.d(TAG, "Found message was sent before we logged in. Won't add it to chat history.");
-                } else {
-                    messageListAdapter.add(deviceMessage);
                 }
+                else
+                    {
+
+                    //收到消息，进行处理（添加到recycleview
+                    messageListAdapter.add(deviceMessage);
+                  }
             }
 
             @Override

@@ -13,7 +13,8 @@ data class DeviceMessage(val userUUID: String, val username: String, val message
     companion object {
         private val gson = Gson()
 
-        fun fromNearbyMessage(message: Message): DeviceMessage {
+        fun fromNearbyMessage(message: Message): DeviceMessage
+        {
             val nearbyMessageString = String(message.content).trim { it <= ' ' }
             return gson.fromJson(
                     String(nearbyMessageString.toByteArray(Charset.forName("UTF-8"))),
