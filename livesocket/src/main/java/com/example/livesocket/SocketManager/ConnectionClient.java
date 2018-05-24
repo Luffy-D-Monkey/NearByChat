@@ -14,9 +14,13 @@ public class ConnectionClient
         new Thread(mClientRequestTask).start();
     }
 
-    public void addNewRequest(DataProtocol data) {
-        if (mClientRequestTask != null && !isClosed)
+    public Boolean addNewRequest(DataProtocol data)
+    {
+        if (mClientRequestTask != null && !isClosed) {
             mClientRequestTask.addRequest(data);
+            return true;
+        }
+        return false;
     }
 
     public void closeConnect()

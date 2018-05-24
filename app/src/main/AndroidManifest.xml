@@ -41,6 +41,9 @@
             android:label="@string/about_activity_label"
             android:parentActivityName="com.esdraslopez.android.nearbychat.login.LoginActivity"
             android:screenOrientation="portrait" />
+
+        <service android:name=".Service.MyService"/>
+
     </application>
 
 </manifest>

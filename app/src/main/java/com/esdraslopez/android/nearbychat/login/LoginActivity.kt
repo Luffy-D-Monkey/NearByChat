@@ -1,7 +1,10 @@
 package com.esdraslopez.android.nearbychat.login
 
 import android.Manifest
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
@@ -23,12 +26,11 @@ import com.esdraslopez.android.nearbychat.GPS.GPSLocationManager
 import com.esdraslopez.android.nearbychat.Location.GeoHash
 import com.esdraslopez.android.nearbychat.MainActivity
 import com.esdraslopez.android.nearbychat.R
+import com.esdraslopez.android.nearbychat.Service.MyService
 import com.esdraslopez.android.nearbychat.Util
-import com.example.livesocket.Protocol.BasicProtocol
+
 import com.example.livesocket.Protocol.DataProtocol
-import com.example.livesocket.SocketManager.ConnectionClient
-import com.example.livesocket.SocketManager.RequestCallBack
-import com.example.livesocket.TestLiveSocket
+
 import kotlinx.android.synthetic.main.activity_login.*
 import java.util.*
 
@@ -40,19 +42,15 @@ class LoginActivity : AppCompatActivity()
     private val Location = 2
     var geoHash:GeoHash? = null
 
-    var client = ConnectionClient(object : RequestCallBack
-    {
-        override fun onSuccess(msg: BasicProtocol)
-        {
-            //交由回调函数处理请求的返回信息，返回参数BasicProtocol中含有所有信息
-            Log.d("lsocket", "onSuccess: " + msg.toString())
-        }
 
-        override fun onFailed(errorCode: Int, msg: String) {
-            Log.d("lsocket", "onFailed: $errorCode->$msg")
 
-        }
-    })
+    var activityReceiver : ActivityReceiver? = null
+
+    val UPDATE_ACTION = "com.esdraslopez.android.nearbychat.action"
+    val CTL_ACTION = "com.esdraslopez.android.nearbychat.CTL_ACTION"
+    val SENDDATA = "com.esdraslopez.android.nearbychat.SENDDATA"
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,19 +73,22 @@ class LoginActivity : AppCompatActivity()
 
         gpsLocationManager = GPSLocationManager.getInstances(this);
         getAddress()
-        var ss:String = ""
-        val data : DataProtocol = DataProtocol()
-        for(i in 1..100)
-            ss += "吃屎吧Kiluta"+i
-
-        data.data = ss
-        data.dtype = 0
-        data.msgId = 1
-        data.pattion = 2
 
 
-        client.addNewRequest(data)
 
+        activityReceiver = ActivityReceiver()
+
+
+        // 创建IntentFilter
+		val filter =  IntentFilter();
+		// 指定BroadcastReceiver监听的Action
+		filter.addAction(DataProtocol.SENDDATARESULT);
+		// 注册BroadcastReceiver
+		registerReceiver(activityReceiver, filter);
+
+		val intent = Intent(this, MyService().javaClass)
+		// 启动后台Service
+        startService(intent)
     }
 /*
     //shouldShowRequestPermissionRationale主要用于给用户一个申请权限的解释，该方法只有在用户在上一次已经拒绝过你的这个权限申请。也就是说，用户已经拒绝一次了，你又弹个授权框，你需要给用户一个解释，为什么要授权，则使用该方法。
@@ -230,7 +231,28 @@ class LoginActivity : AppCompatActivity()
         data.msgId = 1
         data.pattion = 2
 
-        client.addNewRequest(data)
-
+       // 创建Intent
+		val intent = Intent(DataProtocol.SENDDATAREQUEST);
+		intent.putExtra(DataProtocol.SENDDATAREQUEST,data);
+		// 发送广播，将被Service组件中的BroadcastReceiver接收到
+		sendBroadcast(intent);
     }
+
+
+
+// 自定义的BroadcastReceiver，负责监听从Service传回来的广播
+    class ActivityReceiver : BroadcastReceiver()
+	{
+
+        override fun onReceive( context: Context,   intent : Intent)
+		{
+			// 获取Intent中的update消息，update代表播放状态
+			var update:Int  = intent.getIntExtra("update", -1);
+			// 获取Intent中的current消息，current代表当前正在播放的歌曲
+			var current:Int = intent.getIntExtra("current", -1);
+
+		}
+	}
+
+
 }

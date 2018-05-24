@@ -12,6 +12,8 @@ public class DataProtocol extends BasicProtocol implements Serializable
     private static final int PATTION_LEN = 1;
     private static final int DTYPE_LEN = 1;
     private static final int MSGID_LEN = 4;
+    public static final String SENDDATAREQUEST = "com.example.livesocket.Protocol.SENDDATAREQUEST";
+    public static final String SENDDATARESULT = "com.example.livesocket.Protocol.SENDDATARESULT";
 
     private int pattion;
     private int dtype;
