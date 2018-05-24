@@ -9,7 +9,7 @@ import java.net.ProtocolException;
     长度（length，32bit）
     版本号（version，8bit，前3位预留，后5位用于表示真正的版本号）
     数据类型（type，8bit，1表示数据ack）
-    ack消息id（ackMsgId，32bit）
+    ack消息id（ashutdownckMsgId，32bit）
     预留信息（unused）
 心跳类协议（ping）
     长度（length，32bit）
@@ -141,7 +141,8 @@ public abstract class BasicProtocol
      * @param data
      * @return
      */
-    public static int parseType(byte[] data) {
+    public static int parseType(byte[] data)
+    {
         byte t = data[LENGTH_LEN + VER_LEN];//前4个字节（0，1，2，3）为数据长度的int值，以及ver占一个字节
         return t & 0xFF;
     }

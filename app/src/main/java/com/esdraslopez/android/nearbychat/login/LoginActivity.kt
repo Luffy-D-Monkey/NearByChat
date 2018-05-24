@@ -7,10 +7,12 @@ import android.location.Location
 import android.location.LocationListener
 import android.os.Build
 import android.os.Bundle
+import android.provider.ContactsContract
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
@@ -22,6 +24,10 @@ import com.esdraslopez.android.nearbychat.Location.GeoHash
 import com.esdraslopez.android.nearbychat.MainActivity
 import com.esdraslopez.android.nearbychat.R
 import com.esdraslopez.android.nearbychat.Util
+import com.example.livesocket.Protocol.BasicProtocol
+import com.example.livesocket.Protocol.DataProtocol
+import com.example.livesocket.SocketManager.ConnectionClient
+import com.example.livesocket.SocketManager.RequestCallBack
 import com.example.livesocket.TestLiveSocket
 import kotlinx.android.synthetic.main.activity_login.*
 import java.util.*
@@ -34,6 +40,19 @@ class LoginActivity : AppCompatActivity()
     private val Location = 2
     var geoHash:GeoHash? = null
 
+    var client = ConnectionClient(object : RequestCallBack
+    {
+        override fun onSuccess(msg: BasicProtocol)
+        {
+            //交由回调函数处理请求的返回信息，返回参数BasicProtocol中含有所有信息
+            Log.d("lsocket", "onSuccess: " + msg.toString())
+        }
+
+        override fun onFailed(errorCode: Int, msg: String) {
+            Log.d("lsocket", "onFailed: $errorCode->$msg")
+
+        }
+    })
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +75,18 @@ class LoginActivity : AppCompatActivity()
 
         gpsLocationManager = GPSLocationManager.getInstances(this);
         getAddress()
+        var ss:String = ""
+        val data : DataProtocol = DataProtocol()
+        for(i in 1..100)
+            ss += "吃屎吧Kiluta"+i
+
+        data.data = ss
+        data.dtype = 0
+        data.msgId = 1
+        data.pattion = 2
+
+
+        client.addNewRequest(data)
 
     }
 /*
@@ -190,4 +221,16 @@ class LoginActivity : AppCompatActivity()
         location_textview.setText(geoHash.toString())
     }
 
+    public fun testConnect(view : View)
+    {
+
+        val data : DataProtocol = DataProtocol()
+        data.data = "吃屎吧Kiluta"
+        data.dtype = 0
+        data.msgId = 1
+        data.pattion = 2
+
+        client.addNewRequest(data)
+
+    }
 }

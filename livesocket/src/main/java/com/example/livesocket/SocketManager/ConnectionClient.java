@@ -8,7 +8,8 @@ public class ConnectionClient
 
     private ClientRequestTask mClientRequestTask;
 
-    public ConnectionClient(RequestCallBack requestCallBack) {
+    public ConnectionClient(RequestCallBack requestCallBack)
+    {
         mClientRequestTask = new ClientRequestTask(requestCallBack);
         new Thread(mClientRequestTask).start();
     }
@@ -18,7 +19,8 @@ public class ConnectionClient
             mClientRequestTask.addRequest(data);
     }
 
-    public void closeConnect() {
+    public void closeConnect()
+    {
         isClosed = true;
         mClientRequestTask.stop();
     }

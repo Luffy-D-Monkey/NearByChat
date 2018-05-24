@@ -14,10 +14,10 @@ public class SocketUtil
     private static Map<Integer, String> msgImp = new HashMap<>();
 
     static {
-        msgImp.put(DataProtocol.PROTOCOL_TYPE, "com.shandiangou.sdgprotocol.lib.protocol.DataProtocol");       //0
-        msgImp.put(DataAckProtocol.PROTOCOL_TYPE, "com.shandiangou.sdgprotocol.lib.protocol.DataAckProtocol"); //1
-        msgImp.put(PingProtocol.PROTOCOL_TYPE, "com.shandiangou.sdgprotocol.lib.protocol.PingProtocol");       //2
-        msgImp.put(PingAckProtocol.PROTOCOL_TYPE, "com.shandiangou.sdgprotocol.lib.protocol.PingAckProtocol"); //3
+        msgImp.put(DataProtocol.PROTOCOL_TYPE, "com.example.livesocket.Protocol.DataProtocol");       //0
+        msgImp.put(DataAckProtocol.PROTOCOL_TYPE, "com.example.livesocket.Protocol.DataAckProtocol"); //1
+        msgImp.put(PingProtocol.PROTOCOL_TYPE, "com.example.livesocket.Protocol.PingProtocol");       //2
+        msgImp.put(PingAckProtocol.PROTOCOL_TYPE, "com.example.livesocket.Protocol.PingAckProtocol"); //3
     }
 
     /**
@@ -128,7 +128,8 @@ public class SocketUtil
      *
      * @param os
      */
-    public static void closeOutputStream(OutputStream os) {
+    public static void closeOutputStream(OutputStream os)
+    {
         try {
             if (os != null) {
                 os.close();

@@ -33,6 +33,7 @@ public class ClientRequestTask implements Runnable
 
     private boolean isSocketAvailable;
     private boolean closeSendTask;
+    private int HEARTDATA = 0xFF;
 
     protected volatile ConcurrentLinkedQueue<BasicProtocol> dataQueue = new ConcurrentLinkedQueue<>();
 
@@ -41,7 +42,8 @@ public class ClientRequestTask implements Runnable
     }
 
     @Override
-    public void run() {
+    public void run()
+    {
         try {
             try {
                 mSocket = SocketFactory.getDefault().createSocket(Config.ADDRESS, Config.PORT);
@@ -64,7 +66,8 @@ public class ClientRequestTask implements Runnable
             mSendTask.start();
 
             //开启心跳线程
-            if (isLongConnection) {
+            if (isLongConnection)
+            {
                 mHeartBeatTask = new HeartBeatTask();
                 mHeartBeatTask.outputStream = mSocket.getOutputStream();
                 mHeartBeatTask.start();
@@ -80,7 +83,8 @@ public class ClientRequestTask implements Runnable
         toNotifyAll(dataQueue);//有新增待发送数据，则唤醒发送线程
     }
 
-    public synchronized void stop() {
+    public synchronized void stop()
+    {
 
         //关闭接收线程
         closeReciveTask();
@@ -125,7 +129,8 @@ public class ClientRequestTask implements Runnable
     /**
      * 关闭发送线程
      */
-    private void closeSendTask() {
+    private void closeSendTask()
+    {
         if (mSendTask != null) {
             mSendTask.isCancle = true;
             mSendTask.interrupt();
@@ -142,7 +147,8 @@ public class ClientRequestTask implements Runnable
     /**
      * 关闭心跳线程
      */
-    private void closeHeartBeatTask() {
+    private void closeHeartBeatTask()
+    {
         if (mHeartBeatTask != null) {
             mHeartBeatTask.isCancle = true;
             if (mHeartBeatTask.outputStream != null) {
@@ -174,7 +180,8 @@ public class ClientRequestTask implements Runnable
         isLongConnection = false;
     }
 
-    private void toWait(Object o) {
+    private void toWait(Object o)
+    {
         synchronized (o) {
             try {
                 o.wait();
@@ -208,7 +215,11 @@ public class ClientRequestTask implements Runnable
         message.obj = protocol;
         mHandler.sendMessage(message);
     }
-    private boolean isConnected() {
+
+    //根据socket是否被关闭来进行stop
+    private boolean isConnected()
+    {
+        //如果socket没有关闭则返回true
         if (mSocket.isClosed() || !mSocket.isConnected()) {
             ClientRequestTask.this.stop();
             return false;
@@ -219,7 +230,8 @@ public class ClientRequestTask implements Runnable
     /**
      * 服务器返回处理，主线程运行
      */
-    public class MyHandler extends Handler {
+    public class MyHandler extends Handler
+    {
 
         private RequestCallBack mRequestCallBack;
 
@@ -247,19 +259,26 @@ public class ClientRequestTask implements Runnable
     /**
      * 数据接收线程
      */
-    public class ReciveTask extends Thread {
+    public class ReciveTask extends Thread
+    {
 
         private boolean isCancle = false;
         private InputStream inputStream;
 
         @Override
-        public void run() {
-            while (!isCancle) {
-                if (!isConnected()) {
+        public void run()
+        {
+            //死循环子线程
+            while (!isCancle)
+            {
+                //判断的原始依据是socket是否被关闭或者断开连接
+                if (!isConnected())
+                {
                     break;
                 }
 
-                if (inputStream != null) {
+                if (inputStream != null)
+                {
                     BasicProtocol reciverData = SocketUtil.readFromStream(inputStream);
                     if (reciverData != null) {
                         if (reciverData.getProtocolType() == 1 || reciverData.getProtocolType() == 3) {
@@ -286,18 +305,22 @@ public class ClientRequestTask implements Runnable
 
         @Override
         public void run() {
-            while (!isCancle) {
+            while (!isCancle)
+            {
                 if (!isConnected()) {
                     break;
                 }
 
-                BasicProtocol dataContent = dataQueue.poll();
-                if (dataContent == null) {
-                    toWait(dataQueue);//没有发送数据则等待
-                    if (closeSendTask) {
+                BasicProtocol dataContent = dataQueue.poll();//取队列首元素返回，空队列则返回null
+                if (dataContent == null)
+                {
+                    toWait(dataQueue);//没有发送数据则等待,调用对象wait
+                    if (closeSendTask)
+                    {
                         closeSendTask();//notify()调用后，并不是马上就释放对象锁的，所以在此处中断发送线程
                     }
-                } else if (outputStream != null) {
+                } else if (outputStream != null)
+                {
                     synchronized (outputStream) {
                         SocketUtil.write2Stream(dataContent, outputStream);
                     }
@@ -309,34 +332,43 @@ public class ClientRequestTask implements Runnable
     }
 
     /**
-     * 心跳实现，频率5秒
+     * 心跳实现，频率3秒
      * Created by meishan on 16/12/1.
      */
-    public class HeartBeatTask extends Thread {
+    public class HeartBeatTask extends Thread
+    {
 
-        private static final int REPEATTIME = 5000;
-        private boolean isCancle = false;
+
+        private static final int REPEATTIME = 3000;
+        private boolean isCancle = false;//内部定义一个isCancle变量
         private OutputStream outputStream;
         private int pingId;
 
         @Override
-        public void run() {
+        public void run()
+        {
             pingId = 1;
-            while (!isCancle) {
+            while (!isCancle)
+            {
                 if (!isConnected()) {
                     break;
                 }
 
-                try {
-                    mSocket.sendUrgentData(0xFF);
-                } catch (IOException e) {
+                try
+                {
+                    mSocket.sendUrgentData(HEARTDATA);
+                } catch (IOException e)
+                {
                     isSocketAvailable = false;
                     ClientRequestTask.this.stop();
                     break;
                 }
 
-                if (outputStream != null) {
+                //如果outputstream存在则发送ping
+                if (outputStream != null)
+                {
                     PingProtocol pingProtocol = new PingProtocol();
+
                     pingProtocol.setPingId(pingId);
                     pingProtocol.setUnused("ping...");
                     SocketUtil.write2Stream(pingProtocol, outputStream);
