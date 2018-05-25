@@ -5,10 +5,16 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.location.Location;
+import android.location.LocationListener;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.esdraslopez.android.nearbychat.GPS.GPSLocationManager;
+import com.esdraslopez.android.nearbychat.GPS.GPSLocationManagerInService;
+import com.esdraslopez.android.nearbychat.Location.GeoHash;
 import com.esdraslopez.android.nearbychat.login.LoginActivity;
 import com.example.livesocket.Protocol.BasicProtocol;
 import com.example.livesocket.Protocol.DataProtocol;
@@ -17,6 +23,12 @@ import com.example.livesocket.SocketManager.RequestCallBack;
 
 public class MyService extends Service
 {
+    GPSLocationManagerInService gpsLocationManagerInService;
+    private int Location = 2;
+    GeoHash geoHash= null;
+    String geoLocationtoString = "";
+
+    //
     MyReceiver serviceReceiver;
     private Boolean  ISCONNEDT = false;
     private boolean quit;
@@ -112,6 +124,8 @@ public class MyService extends Service
         System.out.println("Service is Created");
         Log.d("service socket create", " in creating");
 
+
+
         client = new ConnectionClient(new RequestCallBack()
         {
 
@@ -137,7 +151,48 @@ public class MyService extends Service
         IntentFilter filter = new IntentFilter();
         filter.addAction(DataProtocol.SENDDATAREQUEST);
         registerReceiver(serviceReceiver,filter);
+
+        gpsLocationManagerInService = GPSLocationManagerInService.getInstances(this);
+        getAddress();
     }
+
+
+    private void getAddress()
+    {
+
+
+        gpsLocationManagerInService.start(locationListener);
+
+    }
+
+    LocationListener locationListener = new  LocationListener()
+    {
+        @Override
+        public void onLocationChanged(android.location.Location location) {
+
+            geoHash = GeoHash.fromLocation(location);//默认最高精确度
+            Log.d("经度纬度", geoHash.toString());
+
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+
+        }
+    };
+
+
+
     // Service被断开连接时回调该方法
     @Override
     public boolean onUnbind(Intent intent)
