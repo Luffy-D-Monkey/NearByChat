@@ -10,4 +10,6 @@
 
 基于枚杉博客 https://blog.csdn.net/u010818425/article/details/53448817 实现socket的长连接（心跳）（2018-05-24），在他的博客中的代码，由于在根据收到消息解析成不同的Protocol的时候，需要根据工程中的路径进行类加载，所以如果是自己实现的话，就需要自己修改SocketUtil类中加载类的路径。而在本Android studio的demo中，直接引用livesocket模块的话，客户端的加载类路径则不需要修改，可以直接使用。谨记客户端和服务端的SocketUtil中的加载类路径都可能需要修改。
 
+2018-05-24
+将socket网络连接放进了Service，并且在登陆的Activity中通过startService的方式启动Service，经实践，发现手动kill程序的时候，Service会自行重启，即原有的socket连接会断开，然后socket跟随Service的重启自动连接，就是两个socket不是同一个。
 
