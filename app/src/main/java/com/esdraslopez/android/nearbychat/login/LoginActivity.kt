@@ -27,6 +27,7 @@ import com.esdraslopez.android.nearbychat.Location.GeoHash
 import com.esdraslopez.android.nearbychat.MainActivity
 import com.esdraslopez.android.nearbychat.R
 import com.esdraslopez.android.nearbychat.Service.MyService
+import com.esdraslopez.android.nearbychat.Service.ServiceBrocastType
 import com.esdraslopez.android.nearbychat.Util
 
 import com.example.livesocket.Protocol.DataProtocol
@@ -42,13 +43,11 @@ class LoginActivity : AppCompatActivity()
     private val Location = 2
     var geoHash:GeoHash? = null
 
+    var geoLocationtoString:String? = null
 
 
     var activityReceiver : ActivityReceiver? = null
 
-    val UPDATE_ACTION = "com.esdraslopez.android.nearbychat.action"
-    val CTL_ACTION = "com.esdraslopez.android.nearbychat.CTL_ACTION"
-    val SENDDATA = "com.esdraslopez.android.nearbychat.SENDDATA"
 
 
 
@@ -195,12 +194,20 @@ class LoginActivity : AppCompatActivity()
     internal var locationListener: LocationListener = object : LocationListener
     {
         override fun onLocationChanged(location: Location) {
-            //更新当前位置
-            showLocations(location)
+
+//            geoLocationtoString = GeoHash.fromLocation(location).toString()
+//            //通知Service更新当前位置
+//            // 创建Intent
+//            val intent = Intent(DataProtocol.SENDDATAREQUEST);
+//            intent.putExtra(ServiceBrocastType.TYPE,ServiceBrocastType.GPSSTATUESCHANGE)
+//            intent.putExtra(com.esdraslopez.android.nearbychat.GPS.GPSProviderStatus.GPS_CHANGED,geoLocationtoString);
+//            sendBroadcast(intent);
+            showLocations(location);
 
         }
 
-        override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {
+        override fun onStatusChanged(provider: String, status: Int, extras: Bundle)
+        {
 
         }
 
@@ -234,8 +241,17 @@ class LoginActivity : AppCompatActivity()
        // 创建Intent
 		val intent = Intent(DataProtocol.SENDDATAREQUEST);
 		intent.putExtra(DataProtocol.SENDDATAREQUEST,data);
+        intent.putExtra(ServiceBrocastType.TYPE,ServiceBrocastType.DATAPROTOCOL)
 		// 发送广播，将被Service组件中的BroadcastReceiver接收到
 		sendBroadcast(intent);
+
+//        if(geoLocationtoString != null) {
+//            val intent2 = Intent(DataProtocol.SENDDATAREQUEST);
+//            intent2.putExtra(ServiceBrocastType.TYPE, ServiceBrocastType.GPSSTATUESCHANGE)
+//            intent2.putExtra(com.esdraslopez.android.nearbychat.GPS.GPSProviderStatus.GPS_CHANGED, geoLocationtoString);
+//            // 发送广播，将被Service组件中的BroadcastReceiver接收到
+//            sendBroadcast(intent);
+//        }
     }
 
 

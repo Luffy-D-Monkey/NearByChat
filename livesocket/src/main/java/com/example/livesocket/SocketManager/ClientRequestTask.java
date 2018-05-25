@@ -3,10 +3,12 @@ package com.example.livesocket.SocketManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 
 import com.example.livesocket.Protocol.BasicProtocol;
 import com.example.livesocket.Protocol.Config;
 import com.example.livesocket.Protocol.DataProtocol;
+import com.example.livesocket.Protocol.PingAckProtocol;
 import com.example.livesocket.Protocol.PingProtocol;
 import com.example.livesocket.Protocol.SocketUtil;
 
@@ -235,7 +237,8 @@ public class ClientRequestTask implements Runnable
 
         private RequestCallBack mRequestCallBack;
 
-        public MyHandler(RequestCallBack callBack) {
+        public MyHandler(RequestCallBack callBack)
+        {
             super(Looper.getMainLooper());
             this.mRequestCallBack = callBack;
         }
@@ -280,9 +283,14 @@ public class ClientRequestTask implements Runnable
                 if (inputStream != null)
                 {
                     BasicProtocol reciverData = SocketUtil.readFromStream(inputStream);
-                    if (reciverData != null) {
-                        if (reciverData.getProtocolType() == 1 || reciverData.getProtocolType() == 3) {
+                    if (reciverData != null)
+                    {
+                        if (reciverData.getProtocolType() == 1 ) {
                             successMessage(reciverData);
+                        }
+                        else if(reciverData.getProtocolType() == 3)
+                        {
+                            Log.d("pingResopnse ask id",""+((PingAckProtocol)reciverData).getAckPingId()+" unused:"+((PingAckProtocol)reciverData).getUnused());
                         }
                     } else {
                         break;

@@ -42,7 +42,8 @@
             android:parentActivityName="com.esdraslopez.android.nearbychat.login.LoginActivity"
             android:screenOrientation="portrait" />
 
-        <service android:name=".Service.MyService"/>
+        <service android:name=".Service.MyService"
+            android:process=":push" />
 
     </application>
 

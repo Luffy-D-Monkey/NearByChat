@@ -11,4 +11,6 @@ public class GPSProviderStatus {
     public static final int GPS_TEMPORARILY_UNAVAILABLE = 3;
     //服务正常有效
     public static final int GPS_AVAILABLE = 4;
+    public static final String GPS_CHANGED = "com.esdraslopez.android.nearbychat.GPS.GPS_CHANGED";
+
 }

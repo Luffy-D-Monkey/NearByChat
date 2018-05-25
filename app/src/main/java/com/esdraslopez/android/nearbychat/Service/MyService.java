@@ -54,14 +54,52 @@ public class MyService extends Service
         @Override
         public void onReceive(final Context context, Intent intent)
         {
-            DataProtocol control = (DataProtocol) intent.getSerializableExtra(DataProtocol.SENDDATAREQUEST);
 
-            Boolean su = client.addNewRequest(control);
 
-            Intent sendIntent = new Intent(DataProtocol.SENDDATARESULT);
-            sendIntent.putExtra(DataProtocol.SENDDATARESULT, su);
-            // 发送广播，将被Activity组件中的BroadcastReceiver接收到
-            sendBroadcast(sendIntent);
+            String type = intent.getStringExtra(ServiceBrocastType.TYPE);
+            switch (type)
+            {
+                case ServiceBrocastType.DATAPROTOCOL:
+                    DataProtocol control = (DataProtocol) intent.getSerializableExtra(DataProtocol.SENDDATAREQUEST);
+
+                    Boolean su = client.addNewRequest(control);
+
+                    Intent sendIntent = new Intent(DataProtocol.SENDDATARESULT);
+                    sendIntent.putExtra(DataProtocol.SENDDATARESULT, su);
+                    // 发送广播，将被Activity组件中的BroadcastReceiver接收到
+                    sendBroadcast(sendIntent);
+                    break;
+
+                case ServiceBrocastType.GPSSTATUESCHANGE:
+//                    String locationtoString = intent.getStringExtra(com.esdraslopez.android.nearbychat.GPS.GPSProviderStatus.GPS_CHANGED);
+//                    client.closeConnect();
+//                    client = null;
+//                    client = new ConnectionClient(new RequestCallBack()
+//                    {
+//
+//                        @Override
+//                        public void onSuccess(BasicProtocol msg) {
+//                            ISCONNEDT = true;
+//                            Log.d("RequestCallBack", "success");
+//                        }
+//
+//                        @Override
+//                        public void onFailed(int errorCode, String msg) {
+//                            ISCONNEDT = false;
+//                            Log.d("RequestCallBack", "failed");
+//
+//                        }
+//
+//                    });
+//                    Log.d("MyService gps  changed ", locationtoString);
+//                    break;
+
+                default:
+
+                    break;
+
+            }
+
         }
     }
 
@@ -72,35 +110,27 @@ public class MyService extends Service
     {
         super.onCreate();
         System.out.println("Service is Created");
-        // 启动一条线程，动态地修改count状态值
-        new Thread()
+        Log.d("service socket create", " in creating");
+
+        client = new ConnectionClient(new RequestCallBack()
         {
+
             @Override
-            public void run()
-            {
-
-
-                    client = new ConnectionClient(new RequestCallBack()
-                    {
-
-                        @Override
-                        public void onSuccess(BasicProtocol msg)
-                        {
-                            ISCONNEDT = true;
-                            Log.d("service socket create","success");
-                        }
-
-                        @Override
-                        public void onFailed(int errorCode, String msg)
-                        {
-                            ISCONNEDT = false;
-                            Log.d("service socket create","failed");
-
-                        }
-                    });
+            public void onSuccess(BasicProtocol msg) {
+                ISCONNEDT = true;
+                Log.d("RequestCallBack", "success");
 
             }
-        }.start();
+
+            @Override
+            public void onFailed(int errorCode, String msg) {
+                ISCONNEDT = false;
+                Log.d("RequestCallBack", "failed");
+
+            }
+
+        });
+
 
         //注册广播接受者
         serviceReceiver = new MyReceiver();
