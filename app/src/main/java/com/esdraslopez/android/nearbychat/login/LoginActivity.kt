@@ -86,6 +86,7 @@ class LoginActivity : AppCompatActivity()
 
         // 创建IntentFilter
 		val filter =  IntentFilter();
+
 		// 指定BroadcastReceiver监听的Action
 		filter.addAction(DataProtocol.SENDDATARESULT);
 		// 注册BroadcastReceiver
@@ -94,6 +95,8 @@ class LoginActivity : AppCompatActivity()
 		val intent = Intent(this, MyService().javaClass)
 		// 启动后台Service
         startService(intent)
+
+
     }
 
     //shouldShowRequestPermissionRationale主要用于给用户一个申请权限的解释，该方法只有在用户在上一次已经拒绝过你的这个权限申请。也就是说，用户已经拒绝一次了，你又弹个授权框，你需要给用户一个解释，为什么要授权，则使用该方法。
@@ -198,35 +201,35 @@ class LoginActivity : AppCompatActivity()
         const val KEY_USER_UUID = "user-uuid"
         const val KEY_GEOHASH = "locationToHash"
     }
-
-    internal var locationListener: LocationListener = object : LocationListener
-    {
-        override fun onLocationChanged(location: Location) {
-
-//            geoLocationtoString = GeoHash.fromLocation(location).toString()
-//            //通知Service更新当前位置
-//            // 创建Intent
-//            val intent = Intent(DataProtocol.SENDDATAREQUEST);
-//            intent.putExtra(ServiceBrocastType.TYPE,ServiceBrocastType.GPSSTATUESCHANGE)
-//            intent.putExtra(com.esdraslopez.android.nearbychat.GPS.GPSProviderStatus.GPS_CHANGED,geoLocationtoString);
-//            sendBroadcast(intent);
-//            showLocations(location);
-
-        }
-
-        override fun onStatusChanged(provider: String, status: Int, extras: Bundle)
-        {
-
-        }
-
-        override fun onProviderEnabled(provider: String) {
-
-        }
-
-        override fun onProviderDisabled(provider: String) {
-
-        }
-    }
+//
+//    internal var locationListener: LocationListener = object : LocationListener
+//    {
+//        override fun onLocationChanged(location: Location) {
+//
+////            geoLocationtoString = GeoHash.fromLocation(location).toString()
+////            //通知Service更新当前位置
+////            // 创建Intent
+////            val intent = Intent(DataProtocol.SENDDATAREQUEST);
+////            intent.putExtra(ServiceBrocastType.TYPE,ServiceBrocastType.GPSSTATUESCHANGE)
+////            intent.putExtra(com.esdraslopez.android.nearbychat.GPS.GPSProviderStatus.GPS_CHANGED,geoLocationtoString);
+////            sendBroadcast(intent);
+////            showLocations(location);
+//
+//        }
+//
+//        override fun onStatusChanged(provider: String, status: Int, extras: Bundle)
+//        {
+//
+//        }
+//
+//        override fun onProviderEnabled(provider: String) {
+//
+//        }
+//
+//        override fun onProviderDisabled(provider: String) {
+//
+//        }
+//    }
 
 //    private fun showLocations(location: Location) {
 ////        val currentposition = "纬度 is" + location.latitude
@@ -241,13 +244,13 @@ class LoginActivity : AppCompatActivity()
     {
 
         val data : DataProtocol = DataProtocol()
-        data.data = "吃屎吧Kiluta"
+        data.data = "9q9hvumnuw5e 吃屎吧Kiluta"
         data.dtype = 0
         data.msgId = 1
-        data.pattion = 2
+        data.pattion = DataProtocol.getPattion_Broadcast()
 
        // 创建Intent
-		val intent = Intent(DataProtocol.SENDDATAREQUEST);
+		val intent = Intent(ServiceBrocastType.ServiceActionReceiver);
 		intent.putExtra(DataProtocol.SENDDATAREQUEST,data);
         intent.putExtra(ServiceBrocastType.TYPE,ServiceBrocastType.DATAPROTOCOL)
 		// 发送广播，将被Service组件中的BroadcastReceiver接收到
@@ -267,16 +270,12 @@ class LoginActivity : AppCompatActivity()
 // 自定义的BroadcastReceiver，负责监听从Service传回来的广播
     class ActivityReceiver : BroadcastReceiver()
 	{
-
         override fun onReceive( context: Context,   intent : Intent)
 		{
 			// 获取Intent中的update消息，update代表播放状态
-			var update:Int  = intent.getIntExtra("update", -1);
-			// 获取Intent中的current消息，current代表当前正在播放的歌曲
-			var current:Int = intent.getIntExtra("current", -1);
-
+//			var pingid:Int  = intent.getIntExtra("pingAckid", -1);
+//			// 获取Intent中的current消息，current代表当前正在播放的歌曲
+//			Log.d("pingAckid","in Login"+pingid);
 		}
 	}
-
-
 }

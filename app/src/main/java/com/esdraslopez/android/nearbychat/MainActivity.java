@@ -1,7 +1,14 @@
 package com.esdraslopez.android.nearbychat;
 
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.constraint.Group;
 import android.support.v7.app.AlertDialog;
@@ -16,10 +23,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 
+import com.esdraslopez.android.nearbychat.Service.MyService;
+import com.esdraslopez.android.nearbychat.Service.ServiceBrocastType;
 import com.esdraslopez.android.nearbychat.login.LoginActivity;
+import com.example.livesocket.Protocol.DataProtocol;
 import com.google.android.gms.nearby.Nearby;
 import com.google.android.gms.nearby.messages.Message;
 import com.google.android.gms.nearby.messages.MessageListener;
+
+import java.lang.ref.WeakReference;
+import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -27,10 +40,18 @@ import butterknife.OnClick;
 
 public class MainActivity extends AppCompatActivity {
 
+
+    //
+
+    MyService.MyBinder binder;
+
+    //
+
+    protected MainActivity thisactivityholder;
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private String username;
-    private String userUUID;
+    public static  final String userUUID = UUID.randomUUID().toString();
     private String geohashstring;
     private long loginTime;
 
@@ -40,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
     private AlertDialog.Builder logoutDialog;
 
     private MessageListAdapter messageListAdapter;
+
 
     @BindView(android.R.id.content) ViewGroup container;
     @BindView(R.id.message_input) EditText messageInput;
@@ -56,11 +78,24 @@ public class MainActivity extends AppCompatActivity {
 
             DeviceMessage deviceMessage = new DeviceMessage(userUUID, username, message, timestamp);
 
+            DataProtocol dataprotocol = new DataProtocol();
+            dataprotocol.setPattion(DataProtocol.getPattion_Broadcast());
+            dataprotocol.setMsgId(1);
+            dataprotocol.setDtype(DataProtocol.PROTOCOL_TYPE);
+            dataprotocol.setData(message+" "+timestamp);
+
+            //发送广播，正常消息
+            Intent intent = new Intent(ServiceBrocastType.ServiceActionReceiver);
+            intent.putExtra(ServiceBrocastType.TYPE,ServiceBrocastType.DATAPROTOCOL);
+            intent.putExtra(ServiceBrocastType.DATAPROTOCOL,dataprotocol);
+            // 发送广播，将被Service组件中的BroadcastReceiver接收到
+            sendBroadcast(intent);
+
             activeMessage = deviceMessage.getMessage();
             Log.d(TAG, "Publishing message = " + new String(activeMessage.getContent()));
 
-            //这里是给附近的用户推送消息
-            Nearby.getMessagesClient(this).publish(activeMessage);
+//            //这里是给附近的用户推送消息
+//            Nearby.getMessagesClient(this).publish(activeMessage);
 
             messageListAdapter.add(deviceMessage);
             messageInput.setText("");
@@ -74,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         username = getIntent().getStringExtra(LoginActivity.KEY_USERNAME);
-        userUUID = getIntent().getStringExtra(LoginActivity.KEY_USER_UUID);
+
         geohashstring = getIntent().getStringExtra(LoginActivity.KEY_GEOHASH);
 
         loginTime = System.currentTimeMillis();
@@ -120,24 +155,35 @@ public class MainActivity extends AppCompatActivity {
         messageListRecycler.setLayoutManager(layoutManager);
         messageListRecycler.setAdapter(messageListAdapter);
 
+
+        //下面通过bindService程序会直接崩溃，暂时没找到原因，现在尝试使用广播
+
+//        final Intent  bindIntent = new Intent(this, MyService.class);
+//        new Thread(new Runnable()
+// {
+//            @Override
+//            public void run()
+// {
+//                bindService(bindIntent, connection, BIND_AUTO_CREATE);
+//            }
+//        }).start();
+
         messageListener = new MessageListener()
         {
-
-
             @Override
             public void onFound(Message message)
             {
                 Log.d(TAG, "Found message: " + new String(message.getContent()));
                 DeviceMessage deviceMessage = DeviceMessage.Companion.fromNearbyMessage(message);
-                if (deviceMessage.getCreationTime() < loginTime) {
+                if (deviceMessage.getCreationTime() < loginTime)
+                {
                     Log.d(TAG, "Found message was sent before we logged in. Won't add it to chat history.");
                 }
                 else
                     {
-
                     //收到消息，进行处理（添加到recycleview
                     messageListAdapter.add(deviceMessage);
-                  }
+                    }
             }
 
             @Override
@@ -152,12 +198,127 @@ public class MainActivity extends AppCompatActivity {
                 .setTitle("Are you sure you want to leave?")
                 .setMessage("Your chat history will be deleted.")
                 .setNegativeButton("No", null);
+
+        Log.d("DDMainActivity ","onCreate");
+
+        thisactivityholder = this;
+
+        IntentFilter filter =  new IntentFilter();
+
+        // 指定BroadcastReceiver监听的Action
+        filter.addAction(ServiceBrocastType.PUSHBROADCAST);
+        // 注册BroadcastReceiver
+        registerReceiver(activityReceiver, filter);
+
+        //发送广播，更新Service中的属性
+        Intent intent = new Intent(ServiceBrocastType.ServiceActionReceiver);
+        intent.putExtra(ServiceBrocastType.TYPE,ServiceBrocastType.SETadditonal);
+        intent.putExtra(ServiceBrocastType.userName,username);
+        intent.putExtra(ServiceBrocastType.userUuid,userUUID);
+        // 发送广播，将被Service组件中的BroadcastReceiver接收到
+        sendBroadcast(intent);
+
+        Log.d("bugbugbug","  "+8);
+
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
+    ActivityReceiver activityReceiver = new ActivityReceiver();
 
+    // 自定义的BroadcastReceiver，负责监听从Service传回来的广播
+    private class ActivityReceiver extends BroadcastReceiver
+    {
+        @Override
+         public void onReceive(Context context , Intent intent)
+        {
+            String type = intent.getStringExtra(ServiceBrocastType.TYPE);
+            switch (type)
+            {
+                case ServiceBrocastType.DATAPROTOCOL:
+                    DataProtocol control = (DataProtocol) intent.getSerializableExtra(DataProtocol.PUSHDATAPLROTOCOL);
+                    if(control != null)
+                    {
+                        DeviceMessage deviceMessage = DeviceMessageUtil.DataProToDeviceMessage(control);
+                        if (deviceMessage.getCreationTime() < loginTime)
+                        {
+                            Log.d(TAG, "Found message was sent before we logged in. Won't add it to chat history.");
+                        }
+                        else
+                        {
+                            //收到消息，进行处理（添加到recycleview
+                            messageListAdapter.add(deviceMessage);
+                        }
+                    }
+                    break;
+
+                case ServiceBrocastType.GPSSTATUESCHANGE:
+//                    String locationtoString = intent.getStringExtra(com.esdraslopez.android.nearbychat.GPS.GPSProviderStatus.GPS_CHANGED);
+//                    client.closeConnect();
+//                    client = null;
+//                    client = new ConnectionClient(new RequestCallBack()
+//                    {
+//
+//                        @Override
+//                        public void onSuccess(BasicProtocol msg) {
+//                            ISCONNEDT = true;
+//                            Log.d("RequestCallBack", "success");
+//                        }
+//
+//                        @Override
+//                        public void onFailed(int errorCode, String msg) {
+//                            ISCONNEDT = false;
+//                            Log.d("RequestCallBack", "failed");
+//
+//                        }
+//
+//                    });
+//                    Log.d("MyService gps  changed ", locationtoString);
+//                    break;
+
+                default:
+
+                    break;
+
+            }
+
+        }
+    }
+//    private ServiceConnection connection=new ServiceConnection() {
+//        /**
+//         * 服务解除绑定时候调用
+//         */
+//        @Override
+//        public void onServiceDisconnected(ComponentName name) {
+//            // TODO Auto-generated method stub
+//
+//        }
+//        /**
+//         * 绑定服务的时候调用
+//         */
+//        @Override
+//        public void onServiceConnected(ComponentName name, IBinder service) {
+//            // TODO Auto-generated method stub
+//            //myService=((DownLoadBinder) service).
+//            binder=(MyService.MyBinder) service;
+//            /*
+//             * 调用DownLoadBinder的方法实现参数的传递
+//             */
+//            binder.setUsername(username);
+//            binder.setUserUUID(userUUID);
+//            binder.setActivituHolder(thisactivityholder);
+//            if( binder.connectToServer())
+//                Log.d("MainAc","connect successed");
+//            else
+//                Log.d("MainAc","connect failed");
+//        }
+//    };
+
+
+
+    @Override
+    public void onStart()
+    {
+        super.onStart();
+        Log.d("DDMainActivity ","onStart");
         Nearby.getMessagesClient(this).subscribe(messageListener);
     }
 
@@ -169,6 +330,7 @@ public class MainActivity extends AppCompatActivity {
         Nearby.getMessagesClient(this).unsubscribe(messageListener);
 
         super.onStop();
+        Log.d("DDMainActivity ","onStop");
     }
 
     @Override
@@ -208,5 +370,41 @@ public class MainActivity extends AppCompatActivity {
                 MainActivity.super.onBackPressed();
             }
         }).show();
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        Log.d("DDMainActivity ","onResume");
+
+    }
+
+
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+        Log.d("DDMainActivity ","onPause");
+
+    }
+    @Override
+    public void onRestart()
+    {
+        super.onRestart();
+        Log.d("DDMainActivity ","onRestart");
+
+    }
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        Log.d("DDMainActivity ","onDestroy");
+
+    }
+
+    public static void PushBroadcast(DataProtocol dataProtocol)
+    {
+
     }
 }

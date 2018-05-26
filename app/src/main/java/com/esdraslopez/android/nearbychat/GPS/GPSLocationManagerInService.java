@@ -22,6 +22,7 @@ public class GPSLocationManagerInService
     List<String> providerList ;
     private String provider;
     private static final int Location = 2;
+    LocationListener locationListener;
 
     GPSLocationManagerInService(Context context)
     {
@@ -61,8 +62,9 @@ public class GPSLocationManagerInService
             //显示位置
             showLocations(location);
 
-        }
+        }getBroadcast
         */
+            locationListener = listener;
             locationManager.requestLocationUpdates(provider, 500, 0, listener);
         }
         return true;
@@ -83,7 +85,13 @@ public class GPSLocationManagerInService
     }
 
 
+    public void stop()
+    {
 
-
+        locationManager.removeUpdates(locationListener);
+        locationManager = null;
+        if(locationListener != null)
+            locationManager = null;
+    }
 
 }

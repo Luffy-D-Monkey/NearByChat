@@ -7,6 +7,31 @@ import java.net.ProtocolException;
 
 public class DataProtocol extends BasicProtocol implements Serializable
 {
+
+
+    //自定义
+    //自定义
+    private static int pattion_SocketFirstConnect = 0x0A;//实际上不一定是第一次连接，只要是发送这个类型的消息，都把socket加到map中保存
+    private static int pattion_Broadcast = 0x0B;//正常消息类型
+
+    public static int getPattion_PushMessage() {
+        return pattion_PushMessage;
+    }
+
+    private static int pattion_PushMessage = 0x1f;//服务器给客户端推送附近的消息
+
+    public static int getPattion_Broadcast() {
+        return pattion_Broadcast;
+    }
+
+    public static int getPattion_SocketFirstConnect()
+    {
+        return pattion_SocketFirstConnect;
+    }
+    //自定义
+    //自定义
+
+
     public static final int PROTOCOL_TYPE = 0;
 
     private static final int PATTION_LEN = 1;
@@ -14,6 +39,8 @@ public class DataProtocol extends BasicProtocol implements Serializable
     private static final int MSGID_LEN = 4;
     public static final String SENDDATAREQUEST = "com.example.livesocket.Protocol.SENDDATAREQUEST";
     public static final String SENDDATARESULT = "com.example.livesocket.Protocol.SENDDATARESULT";
+    public static final String PUSHBROADCAST = "com.example.livesocket.Protocol.PUSHBROADCAST";
+    public static final String PUSHDATAPLROTOCOL = "com.example.livesocket.Protocol.PUSHDATAPLROTOCOL";
 
     private int pattion;
     private int dtype;
@@ -69,7 +96,8 @@ public class DataProtocol extends BasicProtocol implements Serializable
      * @return
      */
     @Override
-    public byte[] genContentData() {
+    public byte[] genContentData()
+    {
         byte[] base = super.genContentData();
         byte[] pattion = {(byte) this.pattion};
         byte[] dtype = {(byte) this.dtype};
@@ -93,7 +121,8 @@ public class DataProtocol extends BasicProtocol implements Serializable
      * @throws ProtocolException
      */
     @Override
-    public int parseContentData(byte[] data) throws ProtocolException {
+    public int parseContentData(byte[] data) throws ProtocolException
+    {
         int pos = super.parseContentData(data);
 
         //解析pattion

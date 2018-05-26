@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.example.livesocket.Protocol.BasicProtocol;
 import com.example.livesocket.Protocol.Config;
+import com.example.livesocket.Protocol.DataAckProtocol;
 import com.example.livesocket.Protocol.DataProtocol;
 import com.example.livesocket.Protocol.PingAckProtocol;
 import com.example.livesocket.Protocol.PingProtocol;
@@ -246,7 +247,8 @@ public class ClientRequestTask implements Runnable
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            switch (msg.what) {
+            switch (msg.what)
+            {
                 case SUCCESS:
                     mRequestCallBack.onSuccess((BasicProtocol) msg.obj);
                     break;
@@ -285,12 +287,20 @@ public class ClientRequestTask implements Runnable
                     BasicProtocol reciverData = SocketUtil.readFromStream(inputStream);
                     if (reciverData != null)
                     {
-                        if (reciverData.getProtocolType() == 1 ) {
+                        if (reciverData.getProtocolType() == 1 )
+                        {
                             successMessage(reciverData);
                         }
                         else if(reciverData.getProtocolType() == 3)
                         {
+                            //ping信息可能在发布的版本不作处理
                             Log.d("pingResopnse ask id",""+((PingAckProtocol)reciverData).getAckPingId()+" unused:"+((PingAckProtocol)reciverData).getUnused());
+                            successMessage(reciverData);
+                        }
+                        else if(reciverData.getProtocolType() == DataProtocol.PROTOCOL_TYPE)
+                        {
+                            Log.d("接受到附近的人消息",""+((DataProtocol)reciverData).getData());
+                            successMessage(reciverData);
                         }
                     } else {
                         break;
@@ -340,14 +350,14 @@ public class ClientRequestTask implements Runnable
     }
 
     /**
-     * 心跳实现，频率3秒
+     * 心跳实现，频率0.5秒
      * Created by meishan on 16/12/1.
      */
     public class HeartBeatTask extends Thread
     {
 
 
-        private static final int REPEATTIME = 3000;
+        private static final int REPEATTIME = 1000;
         private boolean isCancle = false;//内部定义一个isCancle变量
         private OutputStream outputStream;
         private int pingId;

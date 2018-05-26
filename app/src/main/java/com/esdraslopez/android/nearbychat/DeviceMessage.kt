@@ -5,12 +5,14 @@ import com.google.gson.Gson
 
 import java.nio.charset.Charset
 
-data class DeviceMessage(val userUUID: String, val username: String, val messageBody: String, val creationTime: Long) {
+data class DeviceMessage(val userUUID: String, val username: String, val messageBody: String, val creationTime: Long)
+{
 
     val message: Message
         get() = Message(gson.toJson(this).toByteArray(Charset.forName("UTF-8")))
 
-    companion object {
+    companion object
+    {
         private val gson = Gson()
 
         fun fromNearbyMessage(message: Message): DeviceMessage

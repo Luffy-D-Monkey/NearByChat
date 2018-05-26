@@ -7,4 +7,6 @@ public class Config
         public static final String ADDRESS = "192.168.199.199"; //服务器地址
         public static final int PORT = 9013;                 //服务器端口号
 
+        public static final int HEARTf = 5000;
+
 }
