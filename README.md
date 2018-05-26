@@ -13,3 +13,9 @@
 2018-05-24
 将socket网络连接放进了Service，并且在登陆的Activity中通过startService的方式启动Service，经实践，发现手动kill程序的时候，Service会自行重启，即原有的socket连接会断开，然后socket跟随Service的重启自动连接，就是两个socket不是同一个。
 
+
+2018-05-27
+
+第一次完成采用长连接的方式向附近的人推送消息
+
+![效果图](https://github.com/Luffy-D-Monkey/NearByChat/blob/master/WechatIMG9.jpeg)
