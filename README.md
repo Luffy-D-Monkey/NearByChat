@@ -20,8 +20,7 @@
 
 ![效果图](https://github.com/Luffy-D-Monkey/NearByChat/blob/master/WechatIMG9.jpeg)
 
-
-中标题  
+ 
 目前需要实现的功能和优化的目标
 -------  
 * 客户端和服务端超时收不到心跳后主动断开连接，客户端重连
