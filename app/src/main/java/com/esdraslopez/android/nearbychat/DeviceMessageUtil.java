@@ -14,6 +14,9 @@ public class DeviceMessageUtil
             String mess = "";
             for(int i = 2; i<splitmess.length -1 ; i++)
                 mess += splitmess[i];
+
+            mess =  protocol.getData().substring(splitmess[0].length()+1+splitmess[1].length()+1 - 1, protocol.getData().length() - splitmess[splitmess.length - 1].length() -1 );
+
 //val userUUID: String, val username: String, val messageBody: String, val creationTime: Long
             DeviceMessage dmessage = new DeviceMessage(splitmess[1],splitmess[0],mess,Long.parseLong(splitmess[splitmess.length - 1]));
             return dmessage;

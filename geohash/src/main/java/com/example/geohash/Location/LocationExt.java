@@ -1,4 +1,4 @@
-package com.esdraslopez.android.nearbychat.Location;
+package com.example.geohash.Location;
 
 import android.location.Location;
 

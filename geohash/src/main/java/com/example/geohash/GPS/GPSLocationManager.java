@@ -1,4 +1,4 @@
-package com.esdraslopez.android.nearbychat.GPS;
+package com.example.geohash.GPS;
 
 import android.Manifest;
 import android.app.Activity;
@@ -21,7 +21,7 @@ public class GPSLocationManager
     List<String> providerList ;
     private String provider;
     private static final int Location = 2;
-
+    LocationListener locationlistener;
     GPSLocationManager(Activity context)
     {
         this.mContext = new WeakReference<>(context);
@@ -35,6 +35,7 @@ public class GPSLocationManager
 
     public Boolean start(LocationListener listener)
     {
+        locationlistener = listener;
         if (providerList.contains(LocationManager.GPS_PROVIDER)) {
             provider = LocationManager.GPS_PROVIDER;
         } else if (providerList.contains(LocationManager.NETWORK_PROVIDER)) {
@@ -114,4 +115,13 @@ public class GPSLocationManager
         }
         return gpsLocationManager;
     }
+
+    public void stop()
+    {
+
+        locationManager.removeUpdates(locationlistener);
+        locationManager = null;
+        locationlistener = null;
+    }
+
 }

@@ -12,21 +12,24 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
-
-import com.esdraslopez.android.nearbychat.GPS.GPSLocationManager;
-import com.esdraslopez.android.nearbychat.GPS.GPSLocationManagerInService;
-import com.esdraslopez.android.nearbychat.Location.GeoHash;
-import com.esdraslopez.android.nearbychat.MainActivity;
-import com.esdraslopez.android.nearbychat.MainActivity_ViewBinding;
-import com.esdraslopez.android.nearbychat.login.LoginActivity;
+import android.widget.Toast;
+import com.example.geohash.GPS.GPSLocationManagerInService;
+import com.example.geohash.Location.GeoHash;
 import com.example.livesocket.Protocol.BasicProtocol;
 import com.example.livesocket.Protocol.DataProtocol;
 import com.example.livesocket.Protocol.PingAckProtocol;
+import com.example.livesocket.Protocol.PingProtocol;
 import com.example.livesocket.SocketManager.ConnectionClient;
 import com.example.livesocket.SocketManager.RequestCallBack;
 
 import java.lang.ref.WeakReference;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
+
+import butterknife.BindView;
+
+import static java.lang.Thread.sleep;
 
 public class MyService extends Service
 {
@@ -34,6 +37,19 @@ public class MyService extends Service
     private int Location = 2;
     GeoHash geoHash= null;
     String geoLocationtoString = "";
+    String geoLocationtoStringtem = "";
+
+
+
+
+
+    //心跳信号
+    //检查心跳变化：
+    private int heartValue ;//当前心跳值
+    private int prevheartValue ;//当前心跳值
+
+    int accuracy = 9;//接受范围的geohash精度
+
     String [] locations = new String[3];
     int count = 0;
     private String username;
@@ -96,31 +112,62 @@ public class MyService extends Service
     }
 
 
-    public Boolean connectToServer()
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId)
     {
-        int connecttimes = 0;
+        //Intent intent = getIntent();
+        username = intent.getStringExtra(ServiceBrocastType.userName);
+        userUUID = intent.getStringExtra(ServiceBrocastType.userUuid);
+        geoLocationtoString = intent.getStringExtra(ServiceBrocastType.geoHashtoString);
+        //启动获取位置线程。
+        //getAddress();
+        connectToServer(GeoHash.DEFAULT_ACCURACY);
+        return START_NOT_STICKY;//app退出后Service不重启
+    }
 
-        while(++connecttimes<10)
-        {
-            if(geoLocationtoString != null && username != null && userUUID != null)
-                break;
-            try
-            {
-                Thread.sleep(5*1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+    public Boolean connectToServer(int accuracy)
+    {
+//        Toast.makeText(getApplicationContext(),"正在获取位置",Toast.LENGTH_SHORT).show();
+//        int connecttimes = 0;
+//        //延迟等待位置获取
+//        while(++connecttimes<10)
+//        {
+//            Toast.makeText(getApplicationContext(),"正在获取位置",Toast.LENGTH_SHORT).show();
+//            Log.d("gettinggeohash", "-->");
+//
+//            if(geoLocationtoString != null && geoLocationtoString.length() != 0 )
+//                break;
+//            try
+//            {
+//                sleep(10*1000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//        if(geoLocationtoString != null && geoLocationtoString.length() != 0)
+//        {
+//            Toast.makeText(getApplicationContext(),"获取位置失败",Toast.LENGTH_SHORT).show();
+//            return false;
+//        }
+//
+//        Toast.makeText(getApplicationContext(),"获取位置成功",Toast.LENGTH_SHORT).show();
+
+        client = new ConnectionClient(createMyRequestCallBack());
+
+
         Log.d("bugbugbug","  "+3);
         if(geoLocationtoString == null || username == null || userUUID == null)
             return false;
+
         //发送绑定位置的消息
+        Log.d("geolength"," = "+geoLocationtoString.length() + "  "+accuracy+"geoLocationtoString is null = "+(geoLocationtoString == null)+geoLocationtoString);
+
+        geoLocationtoStringtem = geoLocationtoString.substring(0,accuracy - 1);
         DataProtocol data   = new DataProtocol();
-        data.setData(geoLocationtoString + " "+ username+ " " + userUUID);
+        data.setData(geoLocationtoStringtem + " "+ username+ " " + userUUID);
         data.setDtype(DataProtocol.PROTOCOL_TYPE);
         data.setMsgId(1);
         data.setPattion(DataProtocol.getPattion_SocketFirstConnect());
-
         client.addNewRequest(data);
         isSetAdditionals = true;
         Log.d("bugbugbug","  "+4);
@@ -150,14 +197,14 @@ public class MyService extends Service
                     control.setPattion(DataProtocol.getPattion_Broadcast());
                     if(!isSetAdditionals)
                     {
-                        if (connectToServer())
-                        {
                             client.addNewRequest(control);
-                        }
+                            Toast.makeText(context,"正在获取位置信息。。。",Toast.LENGTH_SHORT).show();
+
                     }
                     else
                     {
                         client.addNewRequest(control);
+                        //Toast.makeText(context,"位置信息获取失败",Toast.LENGTH_SHORT).show();
 
                     }
                     Log.d("bugbugbug","  "+6);
@@ -192,6 +239,30 @@ public class MyService extends Service
 //                    });
 //                    Log.d("MyService gps  changed ", locationtoString);
 //                    break;
+                case ServiceBrocastType.ResetGeoHashAccuracy:
+
+                    //断开然后再次连接服务器
+                    ISCONNEDT = false;
+                    isSetAdditionals = false;
+                    client.closeConnect();
+                    client = null;
+                    int accuracy = intent.getIntExtra(ServiceBrocastType.GeoHashAccuracy,-1);
+                    //重新获取位置，并且设置广播范围
+                    connectToServer(accuracy);
+                    break;
+
+                case ServiceBrocastType.ReLogin:
+                    //断开然后再次连接服务器
+                    ISCONNEDT = false;
+                    isSetAdditionals = false;
+                    client.closeConnect();
+                    client = null;
+                    username = intent.getStringExtra(ServiceBrocastType.userName);
+                    userUUID = intent.getStringExtra(ServiceBrocastType.userUuid);
+                    geoLocationtoString = intent.getStringExtra(ServiceBrocastType.geoHashtoString);
+
+                    //重新获取位置，并且设置广播范围
+                    connectToServer(GeoHash.DEFAULT_ACCURACY);
 
                 default:
 
@@ -203,47 +274,71 @@ public class MyService extends Service
     }
 
 
-    // Service被创建时回调该方法
-    @Override
-    public void onCreate()
-    {Log.d("bugbugbug","  "+7);
-        super.onCreate();
 
-        Log.d("吃屎吧",""+ MainActivity.userUUID);
-        Log.d("吃屎吧",""+ MainActivity.userUUID);
-        System.out.println("Service is Created");
-        Log.d("service socket create", " in creating");
-
-
-
-        client = new ConnectionClient(new RequestCallBack()
-        {
-
+    private RequestCallBack createMyRequestCallBack()
+    {
+        return new RequestCallBack() {
             @Override
-            public void onSuccess(BasicProtocol msg)
-            {
+            public void onSuccess(BasicProtocol msg) {
                 ISCONNEDT = true;
-                if(msg.getProtocolType() == 3)
-                {
-//                    int pingid = ((PingAckProtocol)msg).getAckPingId();
-//                    Intent sendIntent = new Intent(DataProtocol.SENDDATARESULT);
-//                    sendIntent.putExtra("pingAckid", pingid);
-                    // 发送广播，将被Activity组件中的BroadcastReceiver接收到
-//                    sendBroadcast(sendIntent);
-                    //Log.d("pingAckid","in MyService"+pingid);
+                //ping心跳恢复
+                if (msg.getProtocolType() == PingAckProtocol.PROTOCOL_TYPE) {
+                    heartValue = ((PingAckProtocol) msg).getAckPingId();
+                    Log.d("pingAckid", "in MyService" + heartValue);
+//                    if( heartValue == 2)
+//                    {	prevheartValue = 0;
+//                        final Timer timer = new Timer();
+//                        timer.schedule(
+//                                new TimerTask() {
+//                                    public void run() {
+//                                        //心跳没更新
+//                                        if(prevheartValue == heartValue)
+//                                        {
+//                                            //断开连接，然后立即重新连接
+//                                            client.closeConnect();
+//                                            System.out.println("socket.sttop 2..."+"  pre="+prevheartValue+ "  now="+heartValue);
+//
+//                                            System.out.println("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+//                                            //System.exit(-1);\
+//                                            client = null;
+//                                            if(username != null || userUUID != null)
+//                                                client = new ConnectionClient(createMyRequestCallBack());
+//
+//                                            if(client != null)
+//                                                if(geoLocationtoString == null)//没有位置信息
+//                                                {
+//                                                    gpsLocationManagerInService = GPSLocationManagerInService.getInstances(this);
+//                                                    getAddress();
+//                                                }
+//                                                else//已经获取位置信息。
+//                                                {
+//
+//                                                }
+//
+//
+//                                                //执行即结束
+//                                            this.cancel();
+//                                            //timer.cancel();
+//                                        }
+//                                        else
+//                                            prevheartValue = heartValue;
+//
+//                                        System.out.println("Timer is running = "+this.hashCode());
+//                                    }
+//                                }, 0, PingProtocol.HEART_FREQUENCY);
+//
+//                    }
 
 
-                }
-                else if(msg.getProtocolType() == DataProtocol.PROTOCOL_TYPE)
-                {
+                } else if (msg.getProtocolType() == DataProtocol.PROTOCOL_TYPE) {
                     Intent sendIntent = new Intent(ServiceBrocastType.PUSHBROADCAST);
-                    sendIntent.putExtra(ServiceBrocastType.TYPE,ServiceBrocastType.DATAPROTOCOL);
-                    sendIntent.putExtra(DataProtocol.PUSHDATAPLROTOCOL,(DataProtocol)msg);
+                    sendIntent.putExtra(ServiceBrocastType.TYPE, ServiceBrocastType.DATAPROTOCOL);
+                    sendIntent.putExtra(DataProtocol.PUSHDATAPLROTOCOL, (DataProtocol) msg);
                     // 发送广播，将被Activity组件中的BroadcastReceiver接收到
 
 
                     sendBroadcast(sendIntent);
-                    Log.d("bugbugbuginService",((DataProtocol)msg).getData());
+                    Log.d("bugbugbuginService", ((DataProtocol) msg).getData());
                 }
                 Log.d("RequestCallBack", "success");
 
@@ -256,8 +351,16 @@ public class MyService extends Service
 
             }
 
-        });
+        };
+    }
 
+    // Service被创建时回调该方法
+    @Override
+    public void onCreate()
+    {    //Log.d("bugbugbug","  "+7);
+        super.onCreate();
+        System.out.println("Service is Created");
+        Log.d("service socket create", " in creating");
 
         //注册广播接受者
         serviceReceiver = new MyReceiver();
@@ -265,57 +368,61 @@ public class MyService extends Service
         filter.addAction(ServiceBrocastType.ServiceActionReceiver);
         //filter.addAction(ServiceBrocastType.SETadditonal);
         registerReceiver(serviceReceiver,filter);
+        //gpsLocationManagerInService = GPSLocationManagerInService.getInstances(this);
 
-        gpsLocationManagerInService = GPSLocationManagerInService.getInstances(this);
-        getAddress();
+
+        //getAddress();
         Log.d("bugbugbug","  "+9);
     }
 
 
-    private void getAddress()
-    {
-        gpsLocationManagerInService.start(locationListener);
-
-    }
-
-    LocationListener locationListener = new  LocationListener()
-    {
-        @Override
-        public void onLocationChanged(android.location.Location location) {
-
-            geoHash = GeoHash.fromLocation(location);//默认最高精确度
-            locations[(count++)%3] =  geoHash.toString();
-            if(locations != null)
-                if(locations[0].equals(locations[1]) && locations[1].equals(locations[2]))
-                {
-                    gpsLocationManagerInService.stop();
-                    if(locationListener != null)
-                        locationListener = null;
-                    geoLocationtoString = locations[0];
+//    private void getAddress()
+//    {
+//        gpsLocationManagerInService.start(locationListener);
+//
+//    }
 
 
-                }
-
-            Log.d("bugbugbug","  "+10);
-            Log.d("经度纬度", geoHash.toString()+count);
-
-        }
-
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-
-        }
-    };
+//    LocationListener locationListener = new  LocationListener()
+//    {
+//
+//        //这里为了节能，一旦获取到位置后就不再自动更新位置，始终使用第一个位置gpsLocationManagerInService.stop();
+//        @Override
+//        public void onLocationChanged(android.location.Location location) {
+//
+//            geoHash = GeoHash.fromLocation(location);//默认最高精确度
+//            locations[(count++)%3] =  geoHash.toString();
+//            if(locations != null)
+//                if(locations[0].equals(locations[1]) && locations[1].equals(locations[2]))
+//                {
+//                    gpsLocationManagerInService.stop();
+//                    if(locationListener != null)
+//                        locationListener = null;
+//                    geoLocationtoString = locations[0];
+//                    Log.d("gotgeohahs", geoLocationtoString);
+//                    //发送绑定消息name，id，location
+//                }
+//
+//            Log.d("bugbugbug","  "+10);
+//            Log.d("经度纬度", geoHash.toString()+count);
+//
+//        }
+//
+//        @Override
+//        public void onStatusChanged(String provider, int status, Bundle extras) {
+//
+//        }
+//
+//        @Override
+//        public void onProviderEnabled(String provider) {
+//
+//        }
+//
+//        @Override
+//        public void onProviderDisabled(String provider) {
+//
+//        }
+//    };
 
     // Service被断开连接时回调该方法
     @Override
@@ -335,6 +442,9 @@ public class MyService extends Service
         System.out.println("Service is Destroyed");
         Log.d("bugbugbug","  "+12);
     }
+
+
+
 
 
 

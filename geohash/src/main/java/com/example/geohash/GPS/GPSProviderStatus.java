@@ -1,4 +1,4 @@
-package com.esdraslopez.android.nearbychat.GPS;
+package com.example.geohash.GPS;
 
 public class GPSProviderStatus {
     //用户手动开启GPS

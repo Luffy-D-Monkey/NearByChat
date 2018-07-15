@@ -22,13 +22,15 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.edit
 import butterknife.BindView
-import com.esdraslopez.android.nearbychat.GPS.GPSLocationManager
-import com.esdraslopez.android.nearbychat.Location.GeoHash
+
 import com.esdraslopez.android.nearbychat.MainActivity
 import com.esdraslopez.android.nearbychat.R
 import com.esdraslopez.android.nearbychat.Service.MyService
 import com.esdraslopez.android.nearbychat.Service.ServiceBrocastType
 import com.esdraslopez.android.nearbychat.Util
+import com.example.geohash.GPS.GPSLocationManager
+import com.example.geohash.GPS.GPSLocationManagerInService
+import com.example.geohash.Location.GeoHash
 
 import com.example.livesocket.Protocol.DataProtocol
 
@@ -45,11 +47,13 @@ class LoginActivity : AppCompatActivity()
 //
 //    var geoLocationtoString:String? = null
 
-    var activityReceiver : ActivityReceiver? = null
+    //广播监听器，这里用到Broadcast抽象类，即ActivityReceiver继承了Broadcast抽象类。
+  //  var activityReceiver : ActivityReceiver? = null
 
     private val Location = 2
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?)
+    {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
@@ -71,6 +75,7 @@ class LoginActivity : AppCompatActivity()
 //        gpsLocationManager = GPSLocationManager.getInstances(this);
 //        getAddress()
 
+        //Toast.makeText(applicationContext,"打开获取权限",To)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
         {
             requestPermission(Manifest.permission.ACCESS_FINE_LOCATION, Location)
@@ -80,21 +85,21 @@ class LoginActivity : AppCompatActivity()
 
             }
         }
+//
+//        activityReceiver = ActivityReceiver()
+//
+//
+////        // 创建IntentFilter
+////		val filter =  IntentFilter();
+////
+////		// 指定BroadcastReceiver监听的Action
+////		filter.addAction(DataProtocol.SENDDATARESULT);
+////		// 注册BroadcastReceiver
+////		registerReceiver(activityReceiver, filter);
+////
 
-        activityReceiver = ActivityReceiver()
-
-
-        // 创建IntentFilter
-		val filter =  IntentFilter();
-
-		// 指定BroadcastReceiver监听的Action
-		filter.addAction(DataProtocol.SENDDATARESULT);
-		// 注册BroadcastReceiver
-		registerReceiver(activityReceiver, filter);
-
-		val intent = Intent(this, MyService().javaClass)
-		// 启动后台Service
-        startService(intent)
+        //开启获取位置
+        getAddress()
 
 
     }
@@ -152,10 +157,12 @@ class LoginActivity : AppCompatActivity()
         if (Util.isConnected(this@LoginActivity))
         {
 
-            var username = username_input.text.toString()
-            if (username.isEmpty()) username = "Anonymous"
+            if(geoHashToString != null && geoHashToString.length != 0)
+            {
+                var username = username_input.text.toString()
+                if (username.isEmpty()) username = "Anonymous"
 
-            val userUUID = UUID.randomUUID().toString()
+                val userUUID = UUID.randomUUID().toString()
 //            if(geoHash != null)
 //            {
 
@@ -172,13 +179,18 @@ class LoginActivity : AppCompatActivity()
                 val intent = Intent(this, MainActivity::class.java)
                 intent.putExtra(KEY_USERNAME, username)
                         .putExtra(KEY_USER_UUID, userUUID)
-//                        .putExtra(KEY_GEOHASH,geoHash.toString())
+                        .putExtra(KEY_GEOHASH,geoHashToString)
                 startActivity(intent)
 //            }
 //            else
 //            {
 //                Snackbar.make(container, "位置获取失败", Snackbar.LENGTH_SHORT).show()
 //            }
+
+            }
+            else
+                Snackbar.make(container, "正在获取位置", Snackbar.LENGTH_SHORT).show()
+
         } else
             Snackbar.make(container, "No Internet Connection", Snackbar.LENGTH_SHORT).show()
     }
@@ -267,7 +279,43 @@ class LoginActivity : AppCompatActivity()
 
 
 
-// 自定义的BroadcastReceiver，负责监听从Service传回来的广播
+
+    var gpsLocationManager: GPSLocationManager? = null
+
+    private fun getAddress() {
+
+        gpsLocationManager = GPSLocationManager.getInstances(this);
+        gpsLocationManager?.start(locationListener)
+    }
+
+    //@BindView(R.id.location_textview) tview:TextView
+//保存位置信息
+    var geoHashToString:String = "";
+    internal var locationListener: LocationListener = object : LocationListener
+    {
+        override fun onLocationChanged(location: Location) {
+            //更新当前位置
+            Log.d("location", location.toString())
+            geoHashToString = GeoHash.fromLocation(location).toString()
+            //关闭位置监听
+            gpsLocationManager?.stop()
+            location_textview.setText(geoHashToString)
+        }
+        override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {
+
+        }
+
+        override fun onProviderEnabled(provider: String) {
+
+        }
+
+        override fun onProviderDisabled(provider: String) {
+
+        }
+    }
+
+
+// 自定义的BroadcastReceiver（抽象类），负责监听从Service传回来的广播，
     class ActivityReceiver : BroadcastReceiver()
 	{
         override fun onReceive( context: Context,   intent : Intent)

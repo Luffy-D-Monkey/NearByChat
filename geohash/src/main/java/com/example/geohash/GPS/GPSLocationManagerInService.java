@@ -1,7 +1,6 @@
-package com.esdraslopez.android.nearbychat.GPS;
+package com.example.geohash.GPS;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.LocationListener;
@@ -30,7 +29,6 @@ public class GPSLocationManagerInService
         if (mContext.get() != null)
         {
             locationManager = (LocationManager) (mContext.get().getSystemService(Context.LOCATION_SERVICE));
-
             providerList = locationManager.getProviders(true);
         }
     }

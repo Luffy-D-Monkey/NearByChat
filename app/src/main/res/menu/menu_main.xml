@@ -2,11 +2,21 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/item_range_100m"
+        android:title="接收范围：100m" />
+    <item
+        android:id="@+id/item_range_500m"
+        android:title="接收范围：500m" />
+    <item
+        android:id="@+id/item_range_2500m"
+        android:title="接收范围：2.5km" />
+    <item
+        android:id="@+id/item_range_20000m"
+        android:title="接收范围：20km" />
+    <item
         android:id="@+id/action_clear_chat_history"
-        android:title="@string/action_clear_chat_history"
-        app:showAsAction="collapseActionView"/>
+        android:title="@string/action_clear_chat_history" />
     <item
         android:id="@+id/action_logout"
-        android:title="@string/action_logout"
-        app:showAsAction="collapseActionView" />
+        android:title="@string/action_logout" />
 </menu>

@@ -1,5 +1,6 @@
 package com.esdraslopez.android.nearbychat;
 
+import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -32,6 +33,7 @@ import com.google.android.gms.nearby.messages.Message;
 import com.google.android.gms.nearby.messages.MessageListener;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.UUID;
 
 import butterknife.BindView;
@@ -41,18 +43,14 @@ import butterknife.OnClick;
 public class MainActivity extends AppCompatActivity {
 
 
-    //
 
-    MyService.MyBinder binder;
-
-    //
 
     protected MainActivity thisactivityholder;
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private String username;
     public static  final String userUUID = UUID.randomUUID().toString();
-    private String geohashstring;
+    //private String geohashstring;
     private long loginTime;
 
     private MessageListener messageListener;
@@ -62,11 +60,14 @@ public class MainActivity extends AppCompatActivity {
 
     private MessageListAdapter messageListAdapter;
 
-
+    private  String geoHashToString ;
     @BindView(android.R.id.content) ViewGroup container;
     @BindView(R.id.message_input) EditText messageInput;
     @BindView(R.id.message_list_recycler) RecyclerView messageListRecycler;
     @BindView(R.id.empty_view) Group chatHistoryEmptyView;
+
+    public MainActivity() {
+    }
 
     @OnClick(R.id.send_message_button)
     public void sendMessage()
@@ -109,8 +110,10 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         username = getIntent().getStringExtra(LoginActivity.KEY_USERNAME);
+        geoHashToString = getIntent().getStringExtra(LoginActivity.KEY_GEOHASH);
 
-        geohashstring = getIntent().getStringExtra(LoginActivity.KEY_GEOHASH);
+        //位置信息转到service中获取了
+        //geohashstring = getIntent().getStringExtra(LoginActivity.KEY_GEOHASH);
 
         loginTime = System.currentTimeMillis();
 
@@ -210,17 +213,60 @@ public class MainActivity extends AppCompatActivity {
         // 注册BroadcastReceiver
         registerReceiver(activityReceiver, filter);
 
-        //发送广播，更新Service中的属性
-        Intent intent = new Intent(ServiceBrocastType.ServiceActionReceiver);
-        intent.putExtra(ServiceBrocastType.TYPE,ServiceBrocastType.SETadditonal);
-        intent.putExtra(ServiceBrocastType.userName,username);
-        intent.putExtra(ServiceBrocastType.userUuid,userUUID);
-        // 发送广播，将被Service组件中的BroadcastReceiver接收到
-        sendBroadcast(intent);
+//        //发送广播，更新Service中的属性
+//        Intent intent = new Intent(ServiceBrocastType.ServiceActionReceiver);
+//        intent.putExtra(ServiceBrocastType.TYPE,ServiceBrocastType.SETadditonal);
+//        intent.putExtra(ServiceBrocastType.userName,username);
+//        intent.putExtra(ServiceBrocastType.userUuid,userUUID);
+//        // 发送广播，将被Service组件中的BroadcastReceiver接收到
+//        sendBroadcast(intent);
+
+        if(!isServiceRunning(this.getApplicationContext(), "com.esdraslopez.android.nearbychat.Service.MyService" ))
+        {
+            Intent intent2 = new Intent(this,MyService.class);
+            // 启动后台Service
+            intent2.putExtra(ServiceBrocastType.userName,username);
+            intent2.putExtra(ServiceBrocastType.geoHashtoString,geoHashToString);
+            intent2.putExtra(ServiceBrocastType.userUuid,userUUID);
+
+            startService(intent2);
+        }
+        else
+        {
+            //Service要断开连接，使用新参数连接。
+            Intent intent2 = new Intent(ServiceBrocastType.ServiceActionReceiver);
+            intent2.putExtra(ServiceBrocastType.TYPE,ServiceBrocastType.ReLogin);
+            intent2.putExtra(ServiceBrocastType.userName,username);
+            intent2.putExtra(ServiceBrocastType.geoHashtoString,geoHashToString);
+            intent2.putExtra(ServiceBrocastType.userUuid,userUUID);
+            sendBroadcast(intent2);
+        }
+
+
 
         Log.d("bugbugbug","  "+8);
 
     }
+
+    //判断Sevice是否在运行
+    public static boolean isServiceRunning(Context context, String ServiceName) {
+        if (("").equals(ServiceName) || ServiceName == null)
+            return false;
+        ActivityManager myManager = (ActivityManager) context
+                .getSystemService(Context.ACTIVITY_SERVICE);
+        ArrayList<ActivityManager.RunningServiceInfo> runningService = (ArrayList<ActivityManager.RunningServiceInfo>) myManager
+                .getRunningServices(30);
+        for (int i = 0; i < runningService.size(); i++) {
+            if (runningService.get(i).service.getClassName().toString()
+                    .equals(ServiceName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+
 
     ActivityReceiver activityReceiver = new ActivityReceiver();
 
@@ -348,6 +394,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         Util.clearSharedPreferences(MainActivity.this);
+                        stopService( new Intent(getApplicationContext(),MyService.class));
                         finish();
                     }
                 }).show();
@@ -356,6 +403,40 @@ public class MainActivity extends AppCompatActivity {
                 messageListAdapter.clear();
                 loginTime = System.currentTimeMillis();
                 return true;
+
+                //设置广播距离范围
+            case R.id.item_range_100m:
+
+                Intent intent = new Intent(ServiceBrocastType.ServiceActionReceiver);
+                intent.putExtra(ServiceBrocastType.TYPE,ServiceBrocastType.ResetGeoHashAccuracy);
+                intent.putExtra(ServiceBrocastType.GeoHashAccuracy,7);
+                // 发送广播，将被Service组件中的BroadcastReceiver接收到
+                sendBroadcast(intent);
+                return true;
+            case R.id.item_range_500m:
+                Intent intent2 = new Intent(ServiceBrocastType.ServiceActionReceiver);
+                intent2.putExtra(ServiceBrocastType.TYPE,ServiceBrocastType.ResetGeoHashAccuracy);
+                intent2.putExtra(ServiceBrocastType.GeoHashAccuracy,6);
+                // 发送广播，将被Service组件中的BroadcastReceiver接收到
+                sendBroadcast(intent2);
+
+                return true;
+            case R.id.item_range_2500m:
+                Intent intent3 = new Intent(ServiceBrocastType.ServiceActionReceiver);
+                intent3.putExtra(ServiceBrocastType.TYPE,ServiceBrocastType.ResetGeoHashAccuracy);
+                intent3.putExtra(ServiceBrocastType.GeoHashAccuracy,5);
+                // 发送广播，将被Service组件中的BroadcastReceiver接收到
+                sendBroadcast(intent3);
+                return true;
+            case R.id.item_range_20000m:
+                Intent intent4 = new Intent(ServiceBrocastType.ServiceActionReceiver);
+                intent4.putExtra(ServiceBrocastType.TYPE,ServiceBrocastType.ResetGeoHashAccuracy);
+                intent4.putExtra(ServiceBrocastType.GeoHashAccuracy,4);
+                // 发送广播，将被Service组件中的BroadcastReceiver接收到
+                sendBroadcast(intent4);
+                return true;
+
+
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -400,6 +481,7 @@ public class MainActivity extends AppCompatActivity {
     {
         super.onDestroy();
         Log.d("DDMainActivity ","onDestroy");
+        stopService( new Intent(this,MyService.class));
 
     }
 

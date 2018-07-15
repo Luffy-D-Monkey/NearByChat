@@ -1,4 +1,4 @@
-package com.esdraslopez.android.nearbychat.Location;
+package com.example.geohash.Location;
 
 import android.location.Location;
 import android.os.Parcel;
@@ -20,6 +20,7 @@ public final class GeoHash implements Parcelable {
     public static final String base32 = "0123456789bcdefghjkmnpqrstuvwxyz";
     public static final int MAX_GEO_HASH_BITS_COUNT = BASE32_BITS * MAX_CHARACTER_PRECISION;
 
+    public static final int DEFAULT_ACCURACY = 9;
     private static final Map<Character, Integer> decodeMap = new HashMap<>();
 
     private long bits = 0;
