@@ -13,3 +13,17 @@
 2018-05-24
 将socket网络连接放进了Service，并且在登陆的Activity中通过startService的方式启动Service，经实践，发现手动kill程序的时候，Service会自行重启，即原有的socket连接会断开，然后socket跟随Service的重启自动连接，就是两个socket不是同一个。
 
+
+2018-05-27
+
+第一次完成采用长连接的方式向附近的人推送消息
+
+![效果图](https://github.com/Luffy-D-Monkey/NearByChat/blob/master/WechatIMG9.jpeg)
+
+ 
+目前需要实现的功能和优化的目标
+-------  
+* 客户端和服务端超时收不到心跳后主动断开连接，客户端重连
+* 当Socket断开连接后，服务端删除广播列表中相应的连接
+* 客户端可以选择收到附近广播的范围
+* 解决GEOHASH的边界问题
