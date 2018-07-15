@@ -31,8 +31,8 @@
 
 ###### 2018-07-15
 -----------------
-*Server采用计时器结合心跳策略判断socket是否连接，断开连接则回收该socket。
-*Client获取位置任务逻辑改变，从Service中提取到登陆页面中，只有获取到位置信息才能登陆。
-*Client登陆后可以选择广播的距离（根据GeoHash匹配程度）。
-*Client获取消息Socket仍然在Service。
+* Server采用计时器结合心跳策略判断socket是否连接，断开连接则回收该socket。
+* Client获取位置任务逻辑改变，从Service中提取到登陆页面中，只有获取到位置信息才能登陆。
+* Client登陆后可以选择广播的距离（根据GeoHash匹配程度）。
+* Client获取消息Socket仍然在Service。
 	
