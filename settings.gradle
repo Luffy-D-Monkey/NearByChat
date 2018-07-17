@@ -1,1 +1,1 @@
-include ':app', ':livesocket'
+include ':app', ':livesocket', ':geohash'
