@@ -33,42 +33,30 @@ import static java.lang.Thread.sleep;
 
 public class MyService extends Service
 {
-    GPSLocationManagerInService gpsLocationManagerInService;
-    private int Location = 2;
-    GeoHash geoHash= null;
+
     String geoLocationtoString = "";
     String geoLocationtoStringtem = "";
-
-
-
 
 
     //心跳信号
     //检查心跳变化：
     private int heartValue ;//当前心跳值
-    private int prevheartValue ;//当前心跳值
 
-    int accuracy = 9;//接受范围的geohash精度
-
-    String [] locations = new String[3];
-    int count = 0;
     private String username;
     private  String userUUID;
-    private long loginTime;
 
     private Boolean isSetAdditionals = false;
-
-    int debugcount = 0;
 
     private WeakReference<Activity> activityHolder ;
     //
     MyReceiver serviceReceiver;
     private Boolean  ISCONNEDT = false;
-    private boolean quit;
+    private boolean quit = false;
     private  ConnectionClient client;
     // 定义onBinder方法所返回的对象
     private MyBinder binder = new MyBinder();
     // 通过继承Binder来实现IBinder类
+    //binder的作用是给绑定的Activity返回binder，让Activity通过binder调用Service的方法
     public class MyBinder extends Binder  // ①
     {
         public Boolean isSocketConnected()
@@ -115,45 +103,17 @@ public class MyService extends Service
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        //Intent intent = getIntent();
+        //用户的参数是有MainActivity在启动的时候通过启动广播的时候通过Intent传送
         username = intent.getStringExtra(ServiceBrocastType.userName);
         userUUID = intent.getStringExtra(ServiceBrocastType.userUuid);
         geoLocationtoString = intent.getStringExtra(ServiceBrocastType.geoHashtoString);
-        //启动获取位置线程。
-        //getAddress();
         connectToServer(GeoHash.DEFAULT_ACCURACY);
         return START_NOT_STICKY;//app退出后Service不重启
     }
-
+//accuracy 是广播距离
     public Boolean connectToServer(int accuracy)
     {
-//        Toast.makeText(getApplicationContext(),"正在获取位置",Toast.LENGTH_SHORT).show();
-//        int connecttimes = 0;
-//        //延迟等待位置获取
-//        while(++connecttimes<10)
-//        {
-//            Toast.makeText(getApplicationContext(),"正在获取位置",Toast.LENGTH_SHORT).show();
-//            Log.d("gettinggeohash", "-->");
-//
-//            if(geoLocationtoString != null && geoLocationtoString.length() != 0 )
-//                break;
-//            try
-//            {
-//                sleep(10*1000);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//        if(geoLocationtoString != null && geoLocationtoString.length() != 0)
-//        {
-//            Toast.makeText(getApplicationContext(),"获取位置失败",Toast.LENGTH_SHORT).show();
-//            return false;
-//        }
-//
-//        Toast.makeText(getApplicationContext(),"获取位置成功",Toast.LENGTH_SHORT).show();
-
         client = new ConnectionClient(createMyRequestCallBack());
-
 
         Log.d("bugbugbug","  "+3);
         if(geoLocationtoString == null || username == null || userUUID == null)
@@ -174,15 +134,16 @@ public class MyService extends Service
         return true;
     }
     // 必须实现的方法，绑定该Service时回调该方法
+    //IBinder 是Binder 的接口
     @Override
     public IBinder onBind(Intent intent)
     {
         System.out.println("Service is Binded");
-        Log.d("bugbugbug","  "+5);
-        // 返回IBinder对象
+
         return binder;
     }
 
+    //BroadcastReceiver是抽象类
     public class MyReceiver extends BroadcastReceiver
     {
         @Override
@@ -216,29 +177,9 @@ public class MyService extends Service
                     userUUID = intent.getStringExtra(ServiceBrocastType.userUuid);
                     break;
 
+                    //位置改变
                 case ServiceBrocastType.GPSSTATUESCHANGE:
-//                    String locationtoString = intent.getStringExtra(com.esdraslopez.android.nearbychat.GPS.GPSProviderStatus.GPS_CHANGED);
-//                    client.closeConnect();
-//                    client = null;
-//                    client = new ConnectionClient(new RequestCallBack()
-//                    {
-//
-//                        @Override
-//                        public void onSuccess(BasicProtocol msg) {
-//                            ISCONNEDT = true;
-//                            Log.d("RequestCallBack", "success");
-//                        }
-//
-//                        @Override
-//                        public void onFailed(int errorCode, String msg) {
-//                            ISCONNEDT = false;
-//                            Log.d("RequestCallBack", "failed");
-//
-//                        }
-//
-//                    });
-//                    Log.d("MyService gps  changed ", locationtoString);
-//                    break;
+                    //重新设置位置
                 case ServiceBrocastType.ResetGeoHashAccuracy:
 
                     //断开然后再次连接服务器
@@ -274,83 +215,41 @@ public class MyService extends Service
     }
 
 
-
+//启动Socket的回调函数，也即对Server发送过来的消息进行处理
     private RequestCallBack createMyRequestCallBack()
     {
         return new RequestCallBack() {
             @Override
             public void onSuccess(BasicProtocol msg) {
                 ISCONNEDT = true;
-                //ping心跳恢复
-                if (msg.getProtocolType() == PingAckProtocol.PROTOCOL_TYPE) {
+                //收到ping心跳回复
+                if (msg.getProtocolType() == PingAckProtocol.PROTOCOL_TYPE)
+                {
                     heartValue = ((PingAckProtocol) msg).getAckPingId();
                     Log.d("pingAckid", "in MyService" + heartValue);
-//                    if( heartValue == 2)
-//                    {	prevheartValue = 0;
-//                        final Timer timer = new Timer();
-//                        timer.schedule(
-//                                new TimerTask() {
-//                                    public void run() {
-//                                        //心跳没更新
-//                                        if(prevheartValue == heartValue)
-//                                        {
-//                                            //断开连接，然后立即重新连接
-//                                            client.closeConnect();
-//                                            System.out.println("socket.sttop 2..."+"  pre="+prevheartValue+ "  now="+heartValue);
-//
-//                                            System.out.println("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-//                                            //System.exit(-1);\
-//                                            client = null;
-//                                            if(username != null || userUUID != null)
-//                                                client = new ConnectionClient(createMyRequestCallBack());
-//
-//                                            if(client != null)
-//                                                if(geoLocationtoString == null)//没有位置信息
-//                                                {
-//                                                    gpsLocationManagerInService = GPSLocationManagerInService.getInstances(this);
-//                                                    getAddress();
-//                                                }
-//                                                else//已经获取位置信息。
-//                                                {
-//
-//                                                }
-//
-//
-//                                                //执行即结束
-//                                            this.cancel();
-//                                            //timer.cancel();
-//                                        }
-//                                        else
-//                                            prevheartValue = heartValue;
-//
-//                                        System.out.println("Timer is running = "+this.hashCode());
-//                                    }
-//                                }, 0, PingProtocol.HEART_FREQUENCY);
-//
-//                    }
 
-
-                } else if (msg.getProtocolType() == DataProtocol.PROTOCOL_TYPE) {
+                }
+                //接收到正常消息数据
+                else if (msg.getProtocolType() == DataProtocol.PROTOCOL_TYPE)
+                {
                     Intent sendIntent = new Intent(ServiceBrocastType.PUSHBROADCAST);
                     sendIntent.putExtra(ServiceBrocastType.TYPE, ServiceBrocastType.DATAPROTOCOL);
                     sendIntent.putExtra(DataProtocol.PUSHDATAPLROTOCOL, (DataProtocol) msg);
                     // 发送广播，将被Activity组件中的BroadcastReceiver接收到
 
-
                     sendBroadcast(sendIntent);
                     Log.d("bugbugbuginService", ((DataProtocol) msg).getData());
                 }
                 Log.d("RequestCallBack", "success");
-
             }
 
+            //发起Socket连接失败
             @Override
             public void onFailed(int errorCode, String msg) {
                 ISCONNEDT = false;
                 Log.d("RequestCallBack", "failed");
 
             }
-
         };
     }
 
@@ -367,6 +266,7 @@ public class MyService extends Service
         IntentFilter filter = new IntentFilter();
         filter.addAction(ServiceBrocastType.ServiceActionReceiver);
         //filter.addAction(ServiceBrocastType.SETadditonal);
+        //注册广播需要传入广播接收者和广播过滤器
         registerReceiver(serviceReceiver,filter);
         //gpsLocationManagerInService = GPSLocationManagerInService.getInstances(this);
 

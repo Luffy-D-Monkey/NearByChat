@@ -28,7 +28,7 @@ import com.esdraslopez.android.nearbychat.Service.MyService;
 import com.esdraslopez.android.nearbychat.Service.ServiceBrocastType;
 import com.esdraslopez.android.nearbychat.login.LoginActivity;
 import com.example.livesocket.Protocol.DataProtocol;
-import com.google.android.gms.nearby.Nearby;
+//import com.google.android.gms.nearby.Nearby;
 import com.google.android.gms.nearby.messages.Message;
 import com.google.android.gms.nearby.messages.MessageListener;
 
@@ -53,8 +53,10 @@ public class MainActivity extends AppCompatActivity {
     //private String geohashstring;
     private long loginTime;
 
-    private MessageListener messageListener;
-    private Message activeMessage;
+    //private MessageListener messageListener;
+
+
+    //private Message activeMessage;
 
     private AlertDialog.Builder logoutDialog;
 
@@ -92,8 +94,8 @@ public class MainActivity extends AppCompatActivity {
             // 发送广播，将被Service组件中的BroadcastReceiver接收到
             sendBroadcast(intent);
 
-            activeMessage = deviceMessage.getMessage();
-            Log.d(TAG, "Publishing message = " + new String(activeMessage.getContent()));
+            //activeMessage = deviceMessage.getMessage();
+            //Log.d(TAG, "Publishing message = " + new String(activeMessage.getContent()));
 
 //            //这里是给附近的用户推送消息
 //            Nearby.getMessagesClient(this).publish(activeMessage);
@@ -171,6 +173,7 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        }).start();
 
+        /*
         messageListener = new MessageListener()
         {
             @Override
@@ -194,6 +197,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "Lost sight of message: " + new String(message.getContent()));
             }
         };
+        */
 
 
         logoutDialog = new AlertDialog.Builder(this);
@@ -365,15 +369,15 @@ public class MainActivity extends AppCompatActivity {
     {
         super.onStart();
         Log.d("DDMainActivity ","onStart");
-        Nearby.getMessagesClient(this).subscribe(messageListener);
+        //Nearby.getMessagesClient(this).subscribe(messageListener);
     }
 
     @Override
     public void onStop() {
-        if (activeMessage != null)
-            Nearby.getMessagesClient(this).unpublish(activeMessage);
+        //if (activeMessage != null)
+            //Nearby.getMessagesClient(this).unpublish(activeMessage);
 
-        Nearby.getMessagesClient(this).unsubscribe(messageListener);
+        //Nearby.getMessagesClient(this).unsubscribe(messageListener);
 
         super.onStop();
         Log.d("DDMainActivity ","onStop");

@@ -55,7 +55,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
             @Override
             public boolean areContentsTheSame(DeviceMessage oldItem, DeviceMessage newItem) {
-                return oldItem.getMessage().equals(newItem.getMessage());
+                return false;
             }
 
             @Override
