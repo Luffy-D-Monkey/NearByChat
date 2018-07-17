@@ -8,6 +8,8 @@ public class PingProtocol extends BasicProtocol {
     public static final int PROTOCOL_TYPE = 2;
 
     private static final int PINGID_LEN = 4;
+    public static final int HEART_FREQUENCY = 40000;//单位 ms
+
 
     private int pingId;
 

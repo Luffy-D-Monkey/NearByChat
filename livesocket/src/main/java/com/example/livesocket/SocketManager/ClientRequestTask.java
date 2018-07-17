@@ -40,7 +40,8 @@ public class ClientRequestTask implements Runnable
 
     protected volatile ConcurrentLinkedQueue<BasicProtocol> dataQueue = new ConcurrentLinkedQueue<>();
 
-    public ClientRequestTask(RequestCallBack requestCallBacks) {
+    public ClientRequestTask(RequestCallBack requestCallBacks)
+    {
         mHandler = new MyHandler(requestCallBacks);
     }
 

@@ -34,7 +34,7 @@ public abstract class BasicProtocol
         protected static final int VER_LEN = 1;       //协议的版本长度（其中前3位作为预留位，后5位作为版本号）
         protected static final int TYPE_LEN = 1;      //协议的数据类型长度
 
-        private int reserved = 0;                     //预留信息
+         private int reserved = 0;                     //预留信息
         private int version = Config.VERSION;         //版本号
 
         /**
